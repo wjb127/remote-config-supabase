@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Plus, Edit, Trash2, Menu as MenuIcon } from 'lucide-react';
 import { App, Menu, ApiResponse } from '@/types/database';
 import CreateMenuModal from '@/components/CreateMenuModal';
+import EditMenuModal from '@/components/EditMenuModal';
 
 interface MenuManagementProps {
   app: App;
@@ -13,6 +14,8 @@ export default function MenuManagement({ app }: MenuManagementProps) {
   const [menus, setMenus] = useState<Menu[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingMenu, setEditingMenu] = useState<Menu | null>(null);
 
   const fetchMenus = useCallback(async () => {
     try {
@@ -35,6 +38,17 @@ export default function MenuManagement({ app }: MenuManagementProps) {
   const handleMenuCreated = () => {
     fetchMenus();
     setIsCreateModalOpen(false);
+  };
+
+  const handleEditMenu = (menu: Menu) => {
+    setEditingMenu(menu);
+    setIsEditModalOpen(true);
+  };
+
+  const handleMenuUpdated = () => {
+    fetchMenus();
+    setIsEditModalOpen(false);
+    setEditingMenu(null);
   };
 
   const handleDeleteMenu = async (menuId: string) => {
@@ -186,6 +200,7 @@ export default function MenuManagement({ app }: MenuManagementProps) {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex space-x-2">
                         <button 
+                          onClick={() => handleEditMenu(menu)}
                           className="text-blue-600 hover:text-blue-900"
                           title="편집"
                         >
@@ -216,6 +231,21 @@ export default function MenuManagement({ app }: MenuManagementProps) {
           appId={app.id}
           menus={menus}
         />
+
+        {/* Edit Menu Modal */}
+        {editingMenu && (
+          <EditMenuModal
+            open={isEditModalOpen}
+            onClose={() => {
+              setIsEditModalOpen(false);
+              setEditingMenu(null);
+            }}
+            onUpdated={handleMenuUpdated}
+            appId={app.id}
+            menu={editingMenu}
+            menus={menus}
+          />
+        )}
       </div>
     </div>
   );

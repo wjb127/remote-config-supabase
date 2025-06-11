@@ -11,6 +11,57 @@ interface CreateStyleRequest {
   description?: string;
 }
 
+// 카테고리별 미리 정의된 스타일 키
+const PREDEFINED_STYLE_KEYS = {
+  color: [
+    { key: 'primary_color', label: '기본 색상', placeholder: '#007AFF' },
+    { key: 'secondary_color', label: '보조 색상', placeholder: '#34C759' },
+    { key: 'background_color', label: '배경 색상', placeholder: '#FFFFFF' },
+    { key: 'text_color', label: '텍스트 색상', placeholder: '#000000' },
+    { key: 'accent_color', label: '강조 색상', placeholder: '#FF3B30' },
+    { key: 'border_color', label: '테두리 색상', placeholder: '#E5E5E7' },
+    { key: 'success_color', label: '성공 색상', placeholder: '#34C759' },
+    { key: 'error_color', label: '오류 색상', placeholder: '#FF3B30' },
+    { key: 'warning_color', label: '경고 색상', placeholder: '#FF9500' },
+  ],
+  typography: [
+    { key: 'font_size_small', label: '작은 글자 크기', placeholder: '12sp' },
+    { key: 'font_size_medium', label: '보통 글자 크기', placeholder: '16sp' },
+    { key: 'font_size_large', label: '큰 글자 크기', placeholder: '20sp' },
+    { key: 'font_size_title', label: '제목 글자 크기', placeholder: '24sp' },
+    { key: 'font_family', label: '글꼴', placeholder: 'SF Pro Display' },
+    { key: 'font_weight_normal', label: '일반 굵기', placeholder: 'normal' },
+    { key: 'font_weight_bold', label: '굵은 글자', placeholder: 'bold' },
+    { key: 'line_height', label: '줄 간격', placeholder: '1.5' },
+  ],
+  spacing: [
+    { key: 'margin_small', label: '작은 여백', placeholder: '8dp' },
+    { key: 'margin_medium', label: '보통 여백', placeholder: '16dp' },
+    { key: 'margin_large', label: '큰 여백', placeholder: '24dp' },
+    { key: 'padding_small', label: '작은 안쪽 여백', placeholder: '8dp' },
+    { key: 'padding_medium', label: '보통 안쪽 여백', placeholder: '16dp' },
+    { key: 'padding_large', label: '큰 안쪽 여백', placeholder: '24dp' },
+    { key: 'gap_small', label: '작은 간격', placeholder: '4dp' },
+    { key: 'gap_medium', label: '보통 간격', placeholder: '8dp' },
+  ],
+  component: [
+    { key: 'border_radius', label: '모서리 둥글기', placeholder: '8dp' },
+    { key: 'button_height', label: '버튼 높이', placeholder: '44dp' },
+    { key: 'input_height', label: '입력창 높이', placeholder: '40dp' },
+    { key: 'card_shadow', label: '카드 그림자', placeholder: '0px 2px 4px rgba(0,0,0,0.1)' },
+    { key: 'elevation', label: '높이감', placeholder: '4dp' },
+    { key: 'stroke_width', label: '선 두께', placeholder: '1dp' },
+  ],
+  layout: [
+    { key: 'container_width', label: '컨테이너 너비', placeholder: '100%' },
+    { key: 'grid_columns', label: '그리드 열 수', placeholder: '2' },
+    { key: 'flex_direction', label: '플렉스 방향', placeholder: 'column' },
+    { key: 'align_items', label: '아이템 정렬', placeholder: 'center' },
+    { key: 'justify_content', label: '콘텐츠 정렬', placeholder: 'center' },
+    { key: 'screen_padding', label: '화면 여백', placeholder: '16dp' },
+  ],
+};
+
 interface CreateStyleModalProps {
   open: boolean;
   onClose: () => void;
@@ -68,6 +119,30 @@ export default function CreateStyleModal({ open, onClose, onCreated, appId }: Cr
       [name]: value,
     }));
   };
+
+  // 카테고리 변경 시 스타일 키 초기화
+  const handleCategoryChange = (category: 'color' | 'typography' | 'spacing' | 'component' | 'layout') => {
+    setFormData(prev => ({
+      ...prev,
+      style_category: category,
+      style_key: '',
+      style_value: '',
+    }));
+  };
+
+  // 스타일 키 변경 시 기본값 설정
+  const handleStyleKeyChange = (styleKey: string) => {
+    const currentOptions = PREDEFINED_STYLE_KEYS[formData.style_category];
+    const selectedOption = currentOptions.find(option => option.key === styleKey);
+    
+    setFormData(prev => ({
+      ...prev,
+      style_key: styleKey,
+      style_value: selectedOption?.placeholder || '',
+    }));
+  };
+
+  const currentStyleOptions = PREDEFINED_STYLE_KEYS[formData.style_category];
 
   if (!open) return null;
 
@@ -129,40 +204,6 @@ export default function CreateStyleModal({ open, onClose, onCreated, appId }: Cr
         {/* 폼 */}
         <form onSubmit={handleSubmit} className="p-6">
           <div className="space-y-4">
-            {/* 스타일 키 */}
-            <div>
-              <label htmlFor="style_key" className="block text-sm font-medium text-gray-700 mb-1">
-                스타일 키 *
-              </label>
-              <input
-                type="text"
-                id="style_key"
-                name="style_key"
-                required
-                value={formData.style_key}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="예: primary_color"
-              />
-            </div>
-
-            {/* 스타일 값 */}
-            <div>
-              <label htmlFor="style_value" className="block text-sm font-medium text-gray-700 mb-1">
-                스타일 값 *
-              </label>
-              <input
-                type="text"
-                id="style_value"
-                name="style_value"
-                required
-                value={formData.style_value}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="예: #007AFF, 16px, bold"
-              />
-            </div>
-
             {/* 카테고리 */}
             <div>
               <label htmlFor="style_category" className="block text-sm font-medium text-gray-700 mb-1">
@@ -172,7 +213,7 @@ export default function CreateStyleModal({ open, onClose, onCreated, appId }: Cr
                 id="style_category"
                 name="style_category"
                 value={formData.style_category}
-                onChange={handleChange}
+                onChange={(e) => handleCategoryChange(e.target.value as 'color' | 'typography' | 'spacing' | 'component' | 'layout')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 {categoryOptions.map((option) => (
@@ -182,6 +223,71 @@ export default function CreateStyleModal({ open, onClose, onCreated, appId }: Cr
                 ))}
               </select>
             </div>
+
+            {/* 스타일 키 */}
+            <div>
+              <label htmlFor="style_key" className="block text-sm font-medium text-gray-700 mb-1">
+                스타일 키 *
+              </label>
+              <select
+                id="style_key"
+                name="style_key"
+                required
+                value={formData.style_key}
+                onChange={(e) => handleStyleKeyChange(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">스타일 키를 선택하세요</option>
+                {currentStyleOptions.map((option) => (
+                  <option key={option.key} value={option.key}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 스타일 값 */}
+            <div>
+              <label htmlFor="style_value" className="block text-sm font-medium text-gray-700 mb-1">
+                스타일 값 *
+              </label>
+              {formData.style_category === 'color' ? (
+                <div className="flex space-x-2">
+                  <input
+                    type="color"
+                    value={formData.style_value.startsWith('#') ? formData.style_value : '#000000'}
+                    onChange={(e) => setFormData(prev => ({ ...prev, style_value: e.target.value }))}
+                    className="w-12 h-10 border border-gray-300 rounded cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    id="style_value"
+                    name="style_value"
+                    required
+                    value={formData.style_value}
+                    onChange={handleChange}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="#007AFF"
+                  />
+                </div>
+              ) : (
+                <input
+                  type="text"
+                  id="style_value"
+                  name="style_value"
+                  required
+                  value={formData.style_value}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder={
+                    currentStyleOptions.find(opt => opt.key === formData.style_key)?.placeholder || 
+                    "스타일 값을 입력하세요"
+                  }
+                />
+              )}
+            </div>
+
+
 
             {/* 설명 */}
             <div>

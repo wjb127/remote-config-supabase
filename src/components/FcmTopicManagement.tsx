@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Plus, Edit, Trash2, MessageSquare } from 'lucide-react';
 import { App, AppFcmTopic, ApiResponse } from '@/types/database';
 import CreateFcmTopicModal from '@/components/CreateFcmTopicModal';
+import EditFcmTopicModal from '@/components/EditFcmTopicModal';
 
 interface FcmTopicManagementProps {
   app: App;
@@ -13,6 +14,8 @@ export default function FcmTopicManagement({ app }: FcmTopicManagementProps) {
   const [topics, setTopics] = useState<AppFcmTopic[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingTopic, setEditingTopic] = useState<AppFcmTopic | null>(null);
 
   const fetchTopics = useCallback(async () => {
     try {
@@ -35,6 +38,17 @@ export default function FcmTopicManagement({ app }: FcmTopicManagementProps) {
   const handleTopicCreated = () => {
     fetchTopics();
     setIsCreateModalOpen(false);
+  };
+
+  const handleEditTopic = (topic: AppFcmTopic) => {
+    setEditingTopic(topic);
+    setIsEditModalOpen(true);
+  };
+
+  const handleTopicUpdated = () => {
+    fetchTopics();
+    setIsEditModalOpen(false);
+    setEditingTopic(null);
   };
 
   const handleDeleteTopic = async (topicId: string) => {
@@ -168,6 +182,7 @@ export default function FcmTopicManagement({ app }: FcmTopicManagementProps) {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">
                         <button 
+                          onClick={() => handleEditTopic(topic)}
                           className="text-blue-600 hover:text-blue-900"
                           title="편집"
                         >
@@ -196,6 +211,20 @@ export default function FcmTopicManagement({ app }: FcmTopicManagementProps) {
           onCreated={handleTopicCreated}
           appId={app.id}
         />
+
+        {/* Edit FCM Topic Modal */}
+        {editingTopic && (
+          <EditFcmTopicModal
+            open={isEditModalOpen}
+            onClose={() => {
+              setIsEditModalOpen(false);
+              setEditingTopic(null);
+            }}
+            onUpdated={handleTopicUpdated}
+            appId={app.id}
+            topic={editingTopic}
+          />
+        )}
       </div>
     </div>
   );

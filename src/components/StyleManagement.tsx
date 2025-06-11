@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Plus, Edit, Trash2, Palette } from 'lucide-react';
 import { App, AppStyle, ApiResponse } from '@/types/database';
 import CreateStyleModal from '@/components/CreateStyleModal';
+import EditStyleModal from '@/components/EditStyleModal';
 
 interface StyleManagementProps {
   app: App;
@@ -13,6 +14,8 @@ export default function StyleManagement({ app }: StyleManagementProps) {
   const [styles, setStyles] = useState<AppStyle[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingStyle, setEditingStyle] = useState<AppStyle | null>(null);
 
   const fetchStyles = useCallback(async () => {
     try {
@@ -35,6 +38,17 @@ export default function StyleManagement({ app }: StyleManagementProps) {
   const handleStyleCreated = () => {
     fetchStyles();
     setIsCreateModalOpen(false);
+  };
+
+  const handleEditStyle = (style: AppStyle) => {
+    setEditingStyle(style);
+    setIsEditModalOpen(true);
+  };
+
+  const handleStyleUpdated = () => {
+    fetchStyles();
+    setIsEditModalOpen(false);
+    setEditingStyle(null);
   };
 
   const handleDeleteStyle = async (styleId: string) => {
@@ -197,6 +211,7 @@ export default function StyleManagement({ app }: StyleManagementProps) {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">
                         <button 
+                          onClick={() => handleEditStyle(style)}
                           className="text-blue-600 hover:text-blue-900"
                           title="편집"
                         >
@@ -225,6 +240,20 @@ export default function StyleManagement({ app }: StyleManagementProps) {
           onCreated={handleStyleCreated}
           appId={app.id}
         />
+
+        {/* Edit Style Modal */}
+        {editingStyle && (
+          <EditStyleModal
+            open={isEditModalOpen}
+            onClose={() => {
+              setIsEditModalOpen(false);
+              setEditingStyle(null);
+            }}
+            onUpdated={handleStyleUpdated}
+            appId={app.id}
+            style={editingStyle}
+          />
+        )}
       </div>
     </div>
   );

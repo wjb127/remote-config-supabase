@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Plus, Edit, Trash2, Wrench } from 'lucide-react';
 import { App, AppToolbar, ApiResponse } from '@/types/database';
 import CreateToolbarModal from '@/components/CreateToolbarModal';
+import EditToolbarModal from '@/components/EditToolbarModal';
 
 interface ToolbarManagementProps {
   app: App;
@@ -13,6 +14,8 @@ export default function ToolbarManagement({ app }: ToolbarManagementProps) {
   const [toolbars, setToolbars] = useState<AppToolbar[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingToolbar, setEditingToolbar] = useState<AppToolbar | null>(null);
 
   const fetchToolbars = useCallback(async () => {
     try {
@@ -35,6 +38,17 @@ export default function ToolbarManagement({ app }: ToolbarManagementProps) {
   const handleToolbarCreated = () => {
     fetchToolbars();
     setIsCreateModalOpen(false);
+  };
+
+  const handleEditToolbar = (toolbar: AppToolbar) => {
+    setEditingToolbar(toolbar);
+    setIsEditModalOpen(true);
+  };
+
+  const handleToolbarUpdated = () => {
+    fetchToolbars();
+    setIsEditModalOpen(false);
+    setEditingToolbar(null);
   };
 
   const handleDeleteToolbar = async (toolbarId: string) => {
@@ -185,6 +199,7 @@ export default function ToolbarManagement({ app }: ToolbarManagementProps) {
                   
                   <div className="flex flex-col space-y-2 ml-4">
                     <button 
+                      onClick={() => handleEditToolbar(toolbar)}
                       className="text-blue-600 hover:text-blue-900 p-1"
                       title="편집"
                     >
@@ -211,6 +226,20 @@ export default function ToolbarManagement({ app }: ToolbarManagementProps) {
           onCreated={handleToolbarCreated}
           appId={app.id}
         />
+
+        {/* Edit Toolbar Modal */}
+        {editingToolbar && (
+          <EditToolbarModal
+            open={isEditModalOpen}
+            onClose={() => {
+              setIsEditModalOpen(false);
+              setEditingToolbar(null);
+            }}
+            onUpdated={handleToolbarUpdated}
+            appId={app.id}
+            toolbar={editingToolbar}
+          />
+        )}
       </div>
     </div>
   );
