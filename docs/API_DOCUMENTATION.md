@@ -185,7 +185,183 @@
 }
 ```
 
-## 4. 모바일 앱 연동 가이드
+### GET /api/apps/{id}/menus/{menuId}
+
+특정 메뉴의 상세 정보를 조회합니다.
+
+### PUT /api/apps/{id}/menus/{menuId}
+
+특정 메뉴의 정보를 수정합니다.
+
+### DELETE /api/apps/{id}/menus/{menuId}
+
+특정 메뉴를 삭제합니다.
+
+## 4. 툴바 관리 API
+
+### GET /api/apps/{id}/toolbars
+
+특정 앱의 툴바 목록을 조회합니다.
+
+### POST /api/apps/{id}/toolbars
+
+특정 앱에 새 툴바를 추가합니다.
+
+### GET /api/apps/{id}/toolbars/{toolbarId}
+
+특정 툴바의 상세 정보를 조회합니다.
+
+### PUT /api/apps/{id}/toolbars/{toolbarId}
+
+특정 툴바의 정보를 수정합니다.
+
+### DELETE /api/apps/{id}/toolbars/{toolbarId}
+
+특정 툴바를 삭제합니다.
+
+## 5. FCM 토픽 관리 API
+
+### GET /api/apps/{id}/fcm_topics
+
+특정 앱의 FCM 토픽 목록을 조회합니다.
+
+### POST /api/apps/{id}/fcm_topics
+
+특정 앱에 새 FCM 토픽을 추가합니다.
+
+### GET /api/apps/{id}/fcm_topics/{topicId}
+
+특정 FCM 토픽의 상세 정보를 조회합니다.
+
+### PUT /api/apps/{id}/fcm_topics/{topicId}
+
+특정 FCM 토픽의 정보를 수정합니다.
+
+### DELETE /api/apps/{id}/fcm_topics/{topicId}
+
+특정 FCM 토픽을 삭제합니다.
+
+## 6. 스타일 관리 API
+
+### GET /api/apps/{id}/styles
+
+특정 앱의 스타일 목록을 조회합니다.
+
+### POST /api/apps/{id}/styles
+
+특정 앱에 새 스타일을 추가합니다.
+
+### GET /api/apps/{id}/styles/{styleId}
+
+특정 스타일의 상세 정보를 조회합니다.
+
+### PUT /api/apps/{id}/styles/{styleId}
+
+특정 스타일의 정보를 수정합니다.
+
+### DELETE /api/apps/{id}/styles/{styleId}
+
+특정 스타일을 삭제합니다.
+
+## 7. 유틸리티 API
+
+### GET /api/apps/{id}/stats
+
+특정 앱의 통계 정보를 조회합니다.
+
+#### 응답 예시
+```json
+{
+  "success": true,
+  "data": {
+    "menus": {
+      "total": 5,
+      "visible": 4,
+      "enabled": 5,
+      "categories": 2,
+      "items": 3,
+      "dividers": 0
+    },
+    "toolbars": {
+      "total": 2,
+      "visible": 2
+    },
+    "fcm_topics": {
+      "total": 3,
+      "active": 3,
+      "default": 1
+    },
+    "styles": {
+      "total": 10,
+      "categories": {
+        "color": 5,
+        "layout": 3,
+        "typography": 2
+      }
+    }
+  }
+}
+```
+
+### POST /api/apps/{id}/clone
+
+앱과 모든 설정을 복제합니다.
+
+#### 요청 본문
+```json
+{
+  "app_name": "복제된 앱",
+  "app_id": "com.example.cloned",
+  "package_name": "com.example.cloned"
+}
+```
+
+### GET /api/apps/{id}/export
+
+앱의 모든 설정을 JSON 파일로 내보냅니다.
+
+### GET /api/apps/stats
+
+전체 앱들의 통계를 조회합니다.
+
+#### 응답 예시
+```json
+{
+  "success": true,
+  "data": {
+    "apps": {
+      "total": 10,
+      "active": 7,
+      "inactive": 2,
+      "maintenance": 1
+    },
+    "menus": {
+      "total": 45,
+      "averagePerApp": 4.5
+    },
+    "toolbars": {
+      "total": 20,
+      "averagePerApp": 2.0
+    },
+    "fcm_topics": {
+      "total": 30,
+      "averagePerApp": 3.0
+    },
+    "styles": {
+      "total": 100,
+      "averagePerApp": 10.0,
+      "topCategories": [
+        { "category": "color", "count": 40 },
+        { "category": "layout", "count": 35 },
+        { "category": "typography", "count": 25 }
+      ]
+    },
+    "lastUpdated": "2024-01-01T00:00:00.000Z"
+  }
+}
+```
+
+## 8. 모바일 앱 연동 가이드
 
 ### Android (Kotlin) 예시
 
@@ -347,14 +523,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 }
 ```
 
-## 7. 캐싱 권장사항
+## 9. 캐싱 권장사항
 
 - 앱 시작 시 설정을 로드하고 로컬에 캐시
 - 백그라운드에서 주기적으로 설정 업데이트 확인
 - 네트워크 오류 시 캐시된 설정 사용
 - 설정 변경 시 앱 재시작 없이 동적 적용
 
-## 8. 보안 고려사항
+## 10. 보안 고려사항
 
 - HTTPS 사용 권장
 - API 키나 인증 토큰 필요 시 헤더에 포함

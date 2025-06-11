@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, Edit, Trash2, Menu as MenuIcon } from 'lucide-react';
 import { App, Menu, ApiResponse } from '@/types/database';
+import CreateMenuModal from '@/components/CreateMenuModal';
 
 interface MenuManagementProps {
   app: App;
@@ -11,6 +12,7 @@ interface MenuManagementProps {
 export default function MenuManagement({ app }: MenuManagementProps) {
   const [menus, setMenus] = useState<Menu[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const fetchMenus = useCallback(async () => {
     try {
@@ -29,6 +31,34 @@ export default function MenuManagement({ app }: MenuManagementProps) {
   useEffect(() => {
     fetchMenus();
   }, [fetchMenus]);
+
+  const handleMenuCreated = () => {
+    fetchMenus();
+    setIsCreateModalOpen(false);
+  };
+
+  const handleDeleteMenu = async (menuId: string) => {
+    if (!confirm('이 메뉴를 삭제하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/apps/${app.id}/menus/${menuId}`, {
+        method: 'DELETE',
+      });
+
+      const result: ApiResponse<null> = await response.json();
+
+      if (result.success) {
+        alert('메뉴가 성공적으로 삭제되었습니다.');
+        fetchMenus();
+      } else {
+        alert(result.error || '메뉴 삭제 중 오류가 발생했습니다.');
+      }
+    } catch {
+      alert('메뉴 삭제 중 오류가 발생했습니다.');
+    }
+  };
 
   if (loading) {
     return (
@@ -54,7 +84,7 @@ export default function MenuManagement({ app }: MenuManagementProps) {
             메뉴 관리
           </h3>
           <button
-            onClick={() => alert('메뉴 추가 기능은 곧 추가됩니다.')}
+            onClick={() => setIsCreateModalOpen(true)}
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -71,7 +101,7 @@ export default function MenuManagement({ app }: MenuManagementProps) {
             </p>
             <div className="mt-6">
               <button
-                onClick={() => alert('메뉴 추가 기능은 곧 추가됩니다.')}
+                onClick={() => setIsCreateModalOpen(true)}
                 className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -102,20 +132,35 @@ export default function MenuManagement({ app }: MenuManagementProps) {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {menus.map((menu) => (
-                  <tr key={menu.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">
-                            {menu.title}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {menu.menu_id}
+                {menus.map((menu) => {
+                  const parentMenu = menu.parent_id ? menus.find(m => m.id === menu.parent_id) : null;
+                  return (
+                    <tr key={menu.id}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          {menu.parent_id && (
+                            <div className="text-gray-400 mr-2">↳</div>
+                          )}
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {menu.title}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {menu.menu_id}
+                              {parentMenu && (
+                                <span className="text-xs text-gray-400 ml-2">
+                                  ({parentMenu.title} 하위)
+                                </span>
+                              )}
+                            </div>
+                            {menu.icon && (
+                              <div className="text-xs text-blue-600 mt-1">
+                                아이콘: {menu.icon}
+                              </div>
+                            )}
                           </div>
                         </div>
-                      </div>
-                    </td>
+                      </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                         {menu.menu_type}
@@ -140,20 +185,37 @@ export default function MenuManagement({ app }: MenuManagementProps) {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex space-x-2">
-                        <button className="text-blue-600 hover:text-blue-900">
+                        <button 
+                          className="text-blue-600 hover:text-blue-900"
+                          title="편집"
+                        >
                           <Edit className="h-4 w-4" />
                         </button>
-                        <button className="text-red-600 hover:text-red-900">
+                        <button 
+                          onClick={() => handleDeleteMenu(menu.id)}
+                          className="text-red-600 hover:text-red-900"
+                          title="삭제"
+                        >
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
         )}
+
+        {/* Create Menu Modal */}
+        <CreateMenuModal
+          open={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onCreated={handleMenuCreated}
+          appId={app.id}
+          menus={menus}
+        />
       </div>
     </div>
   );

@@ -2,23 +2,29 @@
 
 import { useState } from 'react';
 import { X } from 'lucide-react';
-import { CreateAppRequest, ApiResponse, App } from '@/types/database';
+import { AppStyle, ApiResponse } from '@/types/database';
 
-interface CreateAppModalProps {
+interface CreateStyleRequest {
+  style_key: string;
+  style_value: string;
+  style_category: 'color' | 'typography' | 'spacing' | 'component' | 'layout';
+  description?: string;
+}
+
+interface CreateStyleModalProps {
   open: boolean;
   onClose: () => void;
   onCreated: () => void;
+  appId: string;
 }
 
-export default function CreateAppModal({ open, onClose, onCreated }: CreateAppModalProps) {
+export default function CreateStyleModal({ open, onClose, onCreated, appId }: CreateStyleModalProps) {
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState<CreateAppRequest>({
-    app_name: '',
-    app_id: '',
-    package_name: '',
-    version: '1.0.0',
+  const [formData, setFormData] = useState<CreateStyleRequest>({
+    style_key: '',
+    style_value: '',
+    style_category: 'color',
     description: '',
-    status: 'active',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,7 +32,7 @@ export default function CreateAppModal({ open, onClose, onCreated }: CreateAppMo
     setLoading(true);
 
     try {
-      const response = await fetch('/api/apps', {
+      const response = await fetch(`/api/apps/${appId}/styles`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -34,30 +40,28 @@ export default function CreateAppModal({ open, onClose, onCreated }: CreateAppMo
         body: JSON.stringify(formData),
       });
 
-      const result: ApiResponse<App> = await response.json();
+      const result: ApiResponse<AppStyle> = await response.json();
 
       if (result.success) {
-        alert('앱이 성공적으로 생성되었습니다.');
+        alert('스타일이 성공적으로 생성되었습니다.');
         setFormData({
-          app_name: '',
-          app_id: '',
-          package_name: '',
-          version: '1.0.0',
+          style_key: '',
+          style_value: '',
+          style_category: 'color',
           description: '',
-          status: 'active',
         });
         onCreated();
       } else {
-        alert(result.error || '앱 생성 중 오류가 발생했습니다.');
+        alert(result.error || '스타일 생성 중 오류가 발생했습니다.');
       }
     } catch {
-      alert('앱 생성 중 오류가 발생했습니다.');
+      alert('스타일 생성 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -65,9 +69,15 @@ export default function CreateAppModal({ open, onClose, onCreated }: CreateAppMo
     }));
   };
 
-  console.log('CreateAppModal render check - open:', open);
-  
   if (!open) return null;
+
+  const categoryOptions = [
+    { value: 'color', label: '색상' },
+    { value: 'typography', label: '타이포그래피' },
+    { value: 'spacing', label: '간격' },
+    { value: 'component', label: '컴포넌트' },
+    { value: 'layout', label: '레이아웃' },
+  ];
 
   return (
     <div 
@@ -105,7 +115,7 @@ export default function CreateAppModal({ open, onClose, onCreated }: CreateAppMo
         {/* 헤더 */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">
-            새 앱 추가
+            새 스타일 추가
           </h3>
           <button
             type="button"
@@ -119,88 +129,57 @@ export default function CreateAppModal({ open, onClose, onCreated }: CreateAppMo
         {/* 폼 */}
         <form onSubmit={handleSubmit} className="p-6">
           <div className="space-y-4">
-            {/* 앱 이름 */}
+            {/* 스타일 키 */}
             <div>
-              <label htmlFor="app_name" className="block text-sm font-medium text-gray-700 mb-1">
-                앱 이름 *
+              <label htmlFor="style_key" className="block text-sm font-medium text-gray-700 mb-1">
+                스타일 키 *
               </label>
               <input
                 type="text"
-                id="app_name"
-                name="app_name"
+                id="style_key"
+                name="style_key"
                 required
-                value={formData.app_name}
+                value={formData.style_key}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="예: My Awesome App"
+                placeholder="예: primary_color"
               />
             </div>
 
-            {/* 앱 ID */}
+            {/* 스타일 값 */}
             <div>
-              <label htmlFor="app_id" className="block text-sm font-medium text-gray-700 mb-1">
-                앱 ID *
+              <label htmlFor="style_value" className="block text-sm font-medium text-gray-700 mb-1">
+                스타일 값 *
               </label>
               <input
                 type="text"
-                id="app_id"
-                name="app_id"
+                id="style_value"
+                name="style_value"
                 required
-                value={formData.app_id}
+                value={formData.style_value}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="예: com.example.myapp"
+                placeholder="예: #007AFF, 16px, bold"
               />
             </div>
 
-            {/* 패키지명 */}
+            {/* 카테고리 */}
             <div>
-              <label htmlFor="package_name" className="block text-sm font-medium text-gray-700 mb-1">
-                패키지명 *
-              </label>
-              <input
-                type="text"
-                id="package_name"
-                name="package_name"
-                required
-                value={formData.package_name}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="예: com.example.myapp"
-              />
-            </div>
-
-            {/* 버전 */}
-            <div>
-              <label htmlFor="version" className="block text-sm font-medium text-gray-700 mb-1">
-                버전
-              </label>
-              <input
-                type="text"
-                id="version"
-                name="version"
-                value={formData.version}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="1.0.0"
-              />
-            </div>
-
-            {/* 상태 */}
-            <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-                상태
+              <label htmlFor="style_category" className="block text-sm font-medium text-gray-700 mb-1">
+                카테고리 *
               </label>
               <select
-                id="status"
-                name="status"
-                value={formData.status}
+                id="style_category"
+                name="style_category"
+                value={formData.style_category}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="active">활성</option>
-                <option value="inactive">비활성</option>
-                <option value="maintenance">점검중</option>
+                {categoryOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -216,7 +195,7 @@ export default function CreateAppModal({ open, onClose, onCreated }: CreateAppMo
                 value={formData.description}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="앱에 대한 설명을 입력하세요"
+                placeholder="스타일에 대한 설명을 입력하세요"
               />
             </div>
           </div>

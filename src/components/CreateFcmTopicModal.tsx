@@ -2,23 +2,31 @@
 
 import { useState } from 'react';
 import { X } from 'lucide-react';
-import { CreateAppRequest, ApiResponse, App } from '@/types/database';
+import { AppFcmTopic, ApiResponse } from '@/types/database';
 
-interface CreateAppModalProps {
+interface CreateFcmTopicRequest {
+  topic_name: string;
+  topic_id: string;
+  description?: string;
+  is_default: boolean;
+  is_active: boolean;
+}
+
+interface CreateFcmTopicModalProps {
   open: boolean;
   onClose: () => void;
   onCreated: () => void;
+  appId: string;
 }
 
-export default function CreateAppModal({ open, onClose, onCreated }: CreateAppModalProps) {
+export default function CreateFcmTopicModal({ open, onClose, onCreated, appId }: CreateFcmTopicModalProps) {
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState<CreateAppRequest>({
-    app_name: '',
-    app_id: '',
-    package_name: '',
-    version: '1.0.0',
+  const [formData, setFormData] = useState<CreateFcmTopicRequest>({
+    topic_name: '',
+    topic_id: '',
     description: '',
-    status: 'active',
+    is_default: false,
+    is_active: true,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,7 +34,7 @@ export default function CreateAppModal({ open, onClose, onCreated }: CreateAppMo
     setLoading(true);
 
     try {
-      const response = await fetch('/api/apps', {
+      const response = await fetch(`/api/apps/${appId}/fcm_topics`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -34,39 +42,45 @@ export default function CreateAppModal({ open, onClose, onCreated }: CreateAppMo
         body: JSON.stringify(formData),
       });
 
-      const result: ApiResponse<App> = await response.json();
+      const result: ApiResponse<AppFcmTopic> = await response.json();
 
       if (result.success) {
-        alert('앱이 성공적으로 생성되었습니다.');
+        alert('FCM 토픽이 성공적으로 생성되었습니다.');
         setFormData({
-          app_name: '',
-          app_id: '',
-          package_name: '',
-          version: '1.0.0',
+          topic_name: '',
+          topic_id: '',
           description: '',
-          status: 'active',
+          is_default: false,
+          is_active: true,
         });
         onCreated();
       } else {
-        alert(result.error || '앱 생성 중 오류가 발생했습니다.');
+        alert(result.error || 'FCM 토픽 생성 중 오류가 발생했습니다.');
       }
     } catch {
-      alert('앱 생성 중 오류가 발생했습니다.');
+      alert('FCM 토픽 생성 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    
+    if (type === 'checkbox') {
+      const target = e.target as HTMLInputElement;
+      setFormData(prev => ({
+        ...prev,
+        [name]: target.checked,
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
-  console.log('CreateAppModal render check - open:', open);
-  
   if (!open) return null;
 
   return (
@@ -105,7 +119,7 @@ export default function CreateAppModal({ open, onClose, onCreated }: CreateAppMo
         {/* 헤더 */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">
-            새 앱 추가
+            새 FCM 토픽 추가
           </h3>
           <button
             type="button"
@@ -119,89 +133,38 @@ export default function CreateAppModal({ open, onClose, onCreated }: CreateAppMo
         {/* 폼 */}
         <form onSubmit={handleSubmit} className="p-6">
           <div className="space-y-4">
-            {/* 앱 이름 */}
+            {/* 토픽 이름 */}
             <div>
-              <label htmlFor="app_name" className="block text-sm font-medium text-gray-700 mb-1">
-                앱 이름 *
+              <label htmlFor="topic_name" className="block text-sm font-medium text-gray-700 mb-1">
+                토픽 이름 *
               </label>
               <input
                 type="text"
-                id="app_name"
-                name="app_name"
+                id="topic_name"
+                name="topic_name"
                 required
-                value={formData.app_name}
+                value={formData.topic_name}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="예: My Awesome App"
+                placeholder="예: 공지사항"
               />
             </div>
 
-            {/* 앱 ID */}
+            {/* 토픽 ID */}
             <div>
-              <label htmlFor="app_id" className="block text-sm font-medium text-gray-700 mb-1">
-                앱 ID *
+              <label htmlFor="topic_id" className="block text-sm font-medium text-gray-700 mb-1">
+                토픽 ID *
               </label>
               <input
                 type="text"
-                id="app_id"
-                name="app_id"
+                id="topic_id"
+                name="topic_id"
                 required
-                value={formData.app_id}
+                value={formData.topic_id}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="예: com.example.myapp"
+                placeholder="예: announcements"
               />
-            </div>
-
-            {/* 패키지명 */}
-            <div>
-              <label htmlFor="package_name" className="block text-sm font-medium text-gray-700 mb-1">
-                패키지명 *
-              </label>
-              <input
-                type="text"
-                id="package_name"
-                name="package_name"
-                required
-                value={formData.package_name}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="예: com.example.myapp"
-              />
-            </div>
-
-            {/* 버전 */}
-            <div>
-              <label htmlFor="version" className="block text-sm font-medium text-gray-700 mb-1">
-                버전
-              </label>
-              <input
-                type="text"
-                id="version"
-                name="version"
-                value={formData.version}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="1.0.0"
-              />
-            </div>
-
-            {/* 상태 */}
-            <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-                상태
-              </label>
-              <select
-                id="status"
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="active">활성</option>
-                <option value="inactive">비활성</option>
-                <option value="maintenance">점검중</option>
-              </select>
             </div>
 
             {/* 설명 */}
@@ -216,8 +179,39 @@ export default function CreateAppModal({ open, onClose, onCreated }: CreateAppMo
                 value={formData.description}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="앱에 대한 설명을 입력하세요"
+                placeholder="토픽에 대한 설명을 입력하세요"
               />
+            </div>
+
+            {/* 설정 옵션 */}
+            <div className="space-y-3">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="is_default"
+                  name="is_default"
+                  checked={formData.is_default}
+                  onChange={handleChange}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label htmlFor="is_default" className="ml-2 block text-sm text-gray-900">
+                  기본 토픽으로 설정
+                </label>
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="is_active"
+                  name="is_active"
+                  checked={formData.is_active}
+                  onChange={handleChange}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label htmlFor="is_active" className="ml-2 block text-sm text-gray-900">
+                  활성 상태
+                </label>
+              </div>
             </div>
           </div>
 
