@@ -122,16 +122,19 @@ npm run test-api
 
 ### Kotlin/Android 가이드
 
-완전한 Android 통합 가이드는 `docs/KOTLIN_API_GUIDE.md`를 참조하세요.
+**초간단 테스트**: `docs/KOTLIN_SIMPLE_GUIDE.md` - 바로 테스트 가능한 최소 예제  
+**API 설정**: `docs/SUPABASE_API_SETUP.md` - Supabase API URL/키 찾기 및 설정  
+**완전한 가이드**: `docs/KOTLIN_API_GUIDE.md` - 전체 기능 통합 가이드
 
 주요 내용:
-- Retrofit 설정 및 사용법
-- 데이터 모델 정의
-- 동적 메뉴/툴바 구성
-- 스타일 적용 방법
-- FCM 토픽 구독 관리
-- 캐싱 전략
-- 모범 사례
+- ✅ **초간단 테스트**: 메뉴 2개, 스타일 3개로 Remote Config 작동 확인
+- 📡 **API 설정**: Supabase에서 API 정보 찾기, Kotlin 설정 방법
+- 🔧 **Retrofit 설정**: HTTP 클라이언트, 로깅, 에러 처리
+- 📊 **데이터 모델**: 타입 안전한 Kotlin 모델 정의
+- 🎨 **동적 UI**: 메뉴/툴바/스타일 동적 구성
+- 🔔 **FCM 연동**: 푸시 알림 토픽 관리
+- 💾 **캐싱 전략**: 성능 최적화
+- 🛡️ **보안 설정**: 네트워크 보안, 권한 관리
 
 ### 샘플 앱 데이터
 

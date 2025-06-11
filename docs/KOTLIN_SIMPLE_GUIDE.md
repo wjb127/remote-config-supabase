@@ -82,6 +82,7 @@ interface RemoteConfigApi {
 
 ```kotlin
 // RemoteConfigRepository.kt
+import android.util.Log
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -94,19 +95,24 @@ class RemoteConfigRepository {
     
     suspend fun getConfig(): SimpleAppConfig? {
         return try {
+            Log.d("API", "Requesting config for com.test.simple")
             val response = api.getConfig("com.test.simple")
             if (response.success) {
+                Log.d("API", "✅ Config loaded successfully")
                 response.data
             } else {
+                Log.e("API", "❌ Config loading failed: ${response.error}")
                 null
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("API", "❌ Network error: ${e.message}", e)
             null
         }
     }
 }
 ```
+
+> **📋 API 설정이 복잡하다면?** `docs/SUPABASE_API_SETUP.md` 문서를 참고하세요!
 
 ## 🎯 5단계: ViewModel
 
