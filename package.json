@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "create-sample-data": "node scripts/create-sample-data.js",
+    "create-simple-sample": "node scripts/create-simple-sample.js",
     "test-api": "node scripts/test-api.js"
   },
   "dependencies": {
