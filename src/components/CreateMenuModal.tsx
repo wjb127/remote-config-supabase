@@ -17,6 +17,66 @@ interface CreateMenuRequest {
   is_enabled: boolean;
 }
 
+// 메뉴 템플릿 타입 정의
+interface MenuTemplate {
+  id: string;
+  title: string;
+  icon: string;
+  action_type: 'navigate' | 'external_link' | 'api_call' | '';
+  action_value: string;
+  type?: string;
+}
+
+// 메뉴 타입별 미리 정의된 템플릿
+const MENU_TEMPLATES: Record<string, MenuTemplate[]> = {
+  navigation: [
+    { id: 'home', title: '홈', icon: 'home', action_type: 'navigate', action_value: '/home' },
+    { id: 'profile', title: '내 정보', icon: 'user', action_type: 'navigate', action_value: '/profile' },
+    { id: 'settings', title: '설정', icon: 'settings', action_type: 'navigate', action_value: '/settings' },
+    { id: 'notifications', title: '알림', icon: 'bell', action_type: 'navigate', action_value: '/notifications' },
+    { id: 'search', title: '검색', icon: 'search', action_type: 'navigate', action_value: '/search' },
+    { id: 'favorites', title: '즐겨찾기', icon: 'heart', action_type: 'navigate', action_value: '/favorites' },
+    { id: 'history', title: '이용내역', icon: 'clock', action_type: 'navigate', action_value: '/history' },
+    { id: 'help', title: '도움말', icon: 'help-circle', action_type: 'navigate', action_value: '/help' },
+  ],
+  commerce: [
+    { id: 'products', title: '상품', icon: 'package', action_type: 'navigate', action_value: '/products' },
+    { id: 'cart', title: '장바구니', icon: 'shopping-cart', action_type: 'navigate', action_value: '/cart' },
+    { id: 'orders', title: '주문내역', icon: 'list', action_type: 'navigate', action_value: '/orders' },
+    { id: 'wishlist', title: '위시리스트', icon: 'heart', action_type: 'navigate', action_value: '/wishlist' },
+    { id: 'categories', title: '카테고리', icon: 'grid', action_type: 'navigate', action_value: '/categories' },
+    { id: 'brands', title: '브랜드', icon: 'tag', action_type: 'navigate', action_value: '/brands' },
+    { id: 'deals', title: '특가', icon: 'zap', action_type: 'navigate', action_value: '/deals' },
+    { id: 'reviews', title: '리뷰', icon: 'star', action_type: 'navigate', action_value: '/reviews' },
+  ],
+  content: [
+    { id: 'news', title: '뉴스', icon: 'newspaper', action_type: 'navigate', action_value: '/news' },
+    { id: 'articles', title: '게시글', icon: 'file-text', action_type: 'navigate', action_value: '/articles' },
+    { id: 'videos', title: '동영상', icon: 'play', action_type: 'navigate', action_value: '/videos' },
+    { id: 'photos', title: '사진', icon: 'image', action_type: 'navigate', action_value: '/photos' },
+    { id: 'events', title: '이벤트', icon: 'calendar', action_type: 'navigate', action_value: '/events' },
+    { id: 'community', title: '커뮤니티', icon: 'users', action_type: 'navigate', action_value: '/community' },
+    { id: 'faq', title: 'FAQ', icon: 'help-circle', action_type: 'navigate', action_value: '/faq' },
+    { id: 'contact', title: '문의하기', icon: 'mail', action_type: 'navigate', action_value: '/contact' },
+  ],
+  social: [
+    { id: 'feed', title: '피드', icon: 'rss', action_type: 'navigate', action_value: '/feed' },
+    { id: 'friends', title: '친구', icon: 'users', action_type: 'navigate', action_value: '/friends' },
+    { id: 'messages', title: '메시지', icon: 'message-circle', action_type: 'navigate', action_value: '/messages' },
+    { id: 'groups', title: '그룹', icon: 'users', action_type: 'navigate', action_value: '/groups' },
+    { id: 'chat', title: '채팅', icon: 'message-square', action_type: 'navigate', action_value: '/chat' },
+    { id: 'live', title: '라이브', icon: 'video', action_type: 'navigate', action_value: '/live' },
+    { id: 'stories', title: '스토리', icon: 'camera', action_type: 'navigate', action_value: '/stories' },
+    { id: 'trending', title: '트렌딩', icon: 'trending-up', action_type: 'navigate', action_value: '/trending' },
+  ],
+  utilities: [
+    { id: 'divider1', title: '구분선 1', icon: '', action_type: '', action_value: '', type: 'divider' },
+    { id: 'divider2', title: '구분선 2', icon: '', action_type: '', action_value: '', type: 'divider' },
+    { id: 'spacer', title: '여백', icon: '', action_type: '', action_value: '', type: 'divider' },
+    { id: 'custom', title: '사용자 정의', icon: 'plus', action_type: 'navigate', action_value: '/custom' },
+  ],
+};
+
 interface CreateMenuModalProps {
   open: boolean;
   onClose: () => void;
@@ -27,6 +87,9 @@ interface CreateMenuModalProps {
 
 export default function CreateMenuModal({ open, onClose, onCreated, appId, menus }: CreateMenuModalProps) {
   const [loading, setLoading] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('navigation');
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
+  const [isCustomMode, setIsCustomMode] = useState(false);
   const [formData, setFormData] = useState<CreateMenuRequest>({
     menu_id: '',
     title: '',
@@ -105,6 +168,38 @@ export default function CreateMenuModal({ open, onClose, onCreated, appId, menus
     }
   };
 
+  // 카테고리 변경 핸들러
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    setSelectedTemplate('');
+    setIsCustomMode(false);
+  };
+
+  // 템플릿 선택 핸들러
+  const handleTemplateSelect = (templateId: string) => {
+    setSelectedTemplate(templateId);
+    if (templateId === 'custom') {
+      setIsCustomMode(true);
+      return;
+    }
+
+    const template = MENU_TEMPLATES[selectedCategory]?.find((t: MenuTemplate) => t.id === templateId);
+    if (template) {
+              setFormData(prev => ({
+          ...prev,
+          menu_id: template.id,
+          title: template.title,
+          icon: template.icon,
+          menu_type: template.type === 'divider' ? 'divider' : 'item',
+          action_type: template.type === 'divider' ? undefined : (template.action_type as 'navigate' | 'external_link' | 'api_call'),
+          action_value: template.type === 'divider' ? '' : template.action_value,
+        }));
+      setIsCustomMode(false);
+    }
+  };
+
+  const currentTemplates = MENU_TEMPLATES[selectedCategory] || [];
+
   if (!open) return null;
 
   const parentMenus = menus.filter(menu => menu.menu_type === 'category');
@@ -159,39 +254,82 @@ export default function CreateMenuModal({ open, onClose, onCreated, appId, menus
         {/* 폼 */}
         <form onSubmit={handleSubmit} className="p-6">
           <div className="space-y-4">
-            {/* 메뉴 ID */}
+            {/* 메뉴 카테고리 선택 */}
             <div>
-              <label htmlFor="menu_id" className="block text-sm font-medium text-gray-700 mb-1">
-                메뉴 ID *
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                메뉴 카테고리 *
               </label>
-              <input
-                type="text"
-                id="menu_id"
-                name="menu_id"
-                required
-                value={formData.menu_id}
-                onChange={handleChange}
+              <select
+                value={selectedCategory}
+                onChange={(e) => handleCategoryChange(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="예: home, profile, settings"
-              />
+              >
+                <option value="navigation">네비게이션</option>
+                <option value="commerce">커머스</option>
+                <option value="content">콘텐츠</option>
+                <option value="social">소셜</option>
+                <option value="utilities">유틸리티</option>
+              </select>
             </div>
 
-            {/* 메뉴 제목 */}
+            {/* 메뉴 템플릿 선택 */}
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-                메뉴 제목 *
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                메뉴 템플릿 *
               </label>
-              <input
-                type="text"
-                id="title"
-                name="title"
-                required
-                value={formData.title}
-                onChange={handleChange}
+              <select
+                value={selectedTemplate}
+                onChange={(e) => handleTemplateSelect(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="예: 홈, 프로필, 설정"
-              />
+                required
+              >
+                <option value="">템플릿을 선택하세요</option>
+                {currentTemplates.map((template: MenuTemplate) => (
+                  <option key={template.id} value={template.id}>
+                    {template.title}
+                  </option>
+                ))}
+                <option value="custom">사용자 정의</option>
+              </select>
             </div>
+
+            {(selectedTemplate && selectedTemplate !== 'custom') || isCustomMode ? (
+              <>
+                {/* 메뉴 ID */}
+                <div>
+                  <label htmlFor="menu_id" className="block text-sm font-medium text-gray-700 mb-1">
+                    메뉴 ID *
+                  </label>
+                  <input
+                    type="text"
+                    id="menu_id"
+                    name="menu_id"
+                    required
+                    value={formData.menu_id}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="예: home, profile, settings"
+                  />
+                </div>
+
+                {/* 메뉴 제목 */}
+                <div>
+                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                    메뉴 제목 *
+                  </label>
+                  <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    required
+                    value={formData.title}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="예: 홈, 프로필, 설정"
+                  />
+                </div>
+              </>
+            ) : null}
 
             {/* 아이콘 */}
             <div>

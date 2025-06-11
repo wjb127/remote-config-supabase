@@ -17,6 +17,8 @@ interface EditMenuRequest {
   is_enabled: boolean;
 }
 
+
+
 interface EditMenuModalProps {
   open: boolean;
   onClose: () => void;
