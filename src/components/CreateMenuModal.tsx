@@ -10,9 +10,9 @@ interface CreateMenuRequest {
   icon?: string;
   order_index: number;
   parent_id?: string;
-  menu_type: 'item' | 'category' | 'divider';
-  action_type?: 'navigate' | 'external_link' | 'api_call';
-  action_value?: string;
+  menu_type: 'category';
+  action_type: 'navigate' | 'external_link' | 'api_call';
+  action_value: string;
   is_visible: boolean;
   is_enabled: boolean;
 }
@@ -103,7 +103,7 @@ export default function CreateMenuModal({ open, onClose, onCreated, appId, menus
     icon: '',
     order_index: getNextOrderIndex(),
     parent_id: '',
-    menu_type: 'item',
+    menu_type: 'category',
     action_type: 'navigate',
     action_value: '',
     is_visible: true,
@@ -136,7 +136,7 @@ export default function CreateMenuModal({ open, onClose, onCreated, appId, menus
           icon: '',
           order_index: getNextOrderIndex(),
           parent_id: '',
-          menu_type: 'item',
+          menu_type: 'category',
           action_type: 'navigate',
           action_value: '',
           is_visible: true,
@@ -192,15 +192,15 @@ export default function CreateMenuModal({ open, onClose, onCreated, appId, menus
 
     const template = MENU_TEMPLATES[selectedCategory]?.find((t: MenuTemplate) => t.id === templateId);
     if (template) {
-              setFormData(prev => ({
-          ...prev,
-          menu_id: template.id,
-          title: template.title,
-          icon: template.icon,
-          menu_type: template.type === 'divider' ? 'divider' : 'item',
-          action_type: template.type === 'divider' ? undefined : (template.action_type as 'navigate' | 'external_link' | 'api_call'),
-          action_value: template.type === 'divider' ? '' : template.action_value,
-        }));
+      setFormData(prev => ({
+        ...prev,
+        menu_id: template.id,
+        title: template.title,
+        icon: template.icon,
+        menu_type: 'category',
+        action_type: template.action_type as 'navigate' | 'external_link' | 'api_call',
+        action_value: template.action_value,
+      }));
       setIsCustomMode(false);
     }
   };
@@ -424,65 +424,64 @@ export default function CreateMenuModal({ open, onClose, onCreated, appId, menus
               </select>
             </div>
 
-            {/* 메뉴 타입 */}
+            {/* 메뉴 타입 (고정) */}
             <div>
-              <label htmlFor="menu_type" className="block text-sm font-medium text-gray-700 mb-1">
-                메뉴 타입 *
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                메뉴 타입
               </label>
-              <select
-                id="menu_type"
-                name="menu_type"
-                value={formData.menu_type}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="item">메뉴 항목</option>
-                <option value="category">카테고리</option>
-                <option value="divider">구분선</option>
-              </select>
+              <div className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                  <span>카테고리 (고정)</span>
+                </div>
+              </div>
+              <p className="mt-1 text-xs text-gray-500">
+                모든 메뉴는 카테고리 타입으로 생성됩니다
+              </p>
             </div>
 
             {/* 액션 타입 */}
-            {formData.menu_type === 'item' && (
-              <div>
-                <label htmlFor="action_type" className="block text-sm font-medium text-gray-700 mb-1">
-                  액션 타입
-                </label>
-                <select
-                  id="action_type"
-                  name="action_type"
-                  value={formData.action_type}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="navigate">화면 이동</option>
-                  <option value="external_link">외부 링크</option>
-                  <option value="api_call">API 호출</option>
-                </select>
-              </div>
-            )}
+            <div>
+              <label htmlFor="action_type" className="block text-sm font-medium text-gray-700 mb-1">
+                액션 타입 *
+              </label>
+              <select
+                id="action_type"
+                name="action_type"
+                value={formData.action_type}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="navigate">화면 이동</option>
+                <option value="external_link">외부 링크</option>
+                <option value="api_call">API 호출</option>
+              </select>
+            </div>
 
             {/* 액션 값 */}
-            {formData.menu_type === 'item' && formData.action_type && (
-              <div>
-                <label htmlFor="action_value" className="block text-sm font-medium text-gray-700 mb-1">
-                  액션 값
-                </label>
-                <input
-                  type="text"
-                  id="action_value"
-                  name="action_value"
-                  value={formData.action_value}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder={
-                    formData.action_type === 'navigate' ? '예: /home, /profile' :
-                    formData.action_type === 'external_link' ? '예: https://example.com' :
-                    '예: /api/some-action'
-                  }
-                />
-              </div>
-            )}
+            <div>
+              <label htmlFor="action_value" className="block text-sm font-medium text-gray-700 mb-1">
+                액션 값 *
+              </label>
+              <input
+                type="text"
+                id="action_value"
+                name="action_value"
+                value={formData.action_value}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder={
+                  formData.action_type === 'navigate' ? '예: /home, /profile' :
+                  formData.action_type === 'external_link' ? '예: https://example.com' :
+                  '예: /api/some-action'
+                }
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                {formData.action_type === 'navigate' ? '앱 내 화면 경로를 입력하세요' :
+                 formData.action_type === 'external_link' ? '외부 웹사이트 URL을 입력하세요' :
+                 'API 엔드포인트 경로를 입력하세요'}
+              </p>
+            </div>
 
             {/* 설정 옵션 */}
             <div className="grid grid-cols-2 gap-4">

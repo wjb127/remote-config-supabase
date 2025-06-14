@@ -25,9 +25,9 @@ interface CreateToolbarModalProps {
 export default function CreateToolbarModal({ open, onClose, onCreated, appId }: CreateToolbarModalProps) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<CreateToolbarRequest>({
-    toolbar_id: '',
-    title: '',
-    position: 'top',
+    toolbar_id: 'main_toolbar',
+    title: '메인 툴바',
+    position: 'bottom',
     background_color: '#FFFFFF',
     text_color: '#000000',
     height: 56,
@@ -53,9 +53,9 @@ export default function CreateToolbarModal({ open, onClose, onCreated, appId }: 
       if (result.success) {
         alert('툴바가 성공적으로 생성되었습니다.');
         setFormData({
-          toolbar_id: '',
-          title: '',
-          position: 'top',
+          toolbar_id: 'main_toolbar',
+          title: '메인 툴바',
+          position: 'bottom',
           background_color: '#FFFFFF',
           text_color: '#000000',
           height: 56,
@@ -192,7 +192,7 @@ export default function CreateToolbarModal({ open, onClose, onCreated, appId }: 
                   value={formData.toolbar_id}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="예: main_toolbar"
+                  placeholder="main_toolbar"
                 />
               </div>
 
@@ -208,7 +208,7 @@ export default function CreateToolbarModal({ open, onClose, onCreated, appId }: 
                   value={formData.title}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="예: 메인 툴바"
+                  placeholder="메인 툴바"
                 />
               </div>
             </div>
@@ -226,8 +226,8 @@ export default function CreateToolbarModal({ open, onClose, onCreated, appId }: 
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
+                  <option value="bottom">하단 (권장)</option>
                   <option value="top">상단</option>
-                  <option value="bottom">하단</option>
                 </select>
               </div>
 
