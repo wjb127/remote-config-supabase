@@ -59,10 +59,20 @@ export default function CreateAppModal({ open, onClose, onCreated }: CreateAppMo
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
+    
+    // 앱 ID 변경 시 패키지명도 자동으로 동기화
+    if (name === 'app_id') {
+      setFormData(prev => ({
+        ...prev,
+        app_id: value,
+        package_name: value, // 앱 ID와 패키지명 동기화
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   console.log('CreateAppModal render check - open:', open);
@@ -91,12 +101,12 @@ export default function CreateAppModal({ open, onClose, onCreated }: CreateAppMo
       
       {/* 모달 컨텐츠 */}
       <div 
-        className="relative w-full max-w-md bg-white rounded-lg shadow-2xl transform scale-100 transition-all duration-200 ease-out"
+        className="relative w-full max-w-lg bg-white rounded-lg shadow-2xl transform scale-100 transition-all duration-200 ease-out"
         style={{
           backgroundColor: 'white',
           borderRadius: '8px',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-          maxWidth: '28rem',
+          maxWidth: '32rem',
           width: '100%',
           position: 'relative',
           zIndex: 10000
@@ -136,10 +146,10 @@ export default function CreateAppModal({ open, onClose, onCreated }: CreateAppMo
               />
             </div>
 
-            {/* 앱 ID */}
+            {/* 앱 ID (패키지명) */}
             <div>
               <label htmlFor="app_id" className="block text-sm font-medium text-gray-700 mb-1">
-                앱 ID *
+                앱 ID (패키지명) *
               </label>
               <input
                 type="text"
@@ -151,23 +161,54 @@ export default function CreateAppModal({ open, onClose, onCreated }: CreateAppMo
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="예: com.example.myapp"
               />
-            </div>
-
-            {/* 패키지명 */}
-            <div>
-              <label htmlFor="package_name" className="block text-sm font-medium text-gray-700 mb-1">
-                패키지명 *
-              </label>
-              <input
-                type="text"
-                id="package_name"
-                name="package_name"
-                required
-                value={formData.package_name}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="예: com.example.myapp"
-              />
+              <p className="mt-1 text-xs text-gray-500">
+                앱 ID와 패키지명이 동일하게 설정됩니다
+              </p>
+              
+              {/* 패키지명 규칙 안내 */}
+              <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <div className="text-xs text-blue-800 font-medium mb-1">📱 패키지명 규칙:</div>
+                <div className="text-xs text-blue-700 space-y-1">
+                  <div>• <strong>형식:</strong> com.회사명.앱명</div>
+                  <div>• <strong>예시:</strong> com.google.gmail, com.naver.blog</div>
+                  <div>• <strong>규칙:</strong> 영문 소문자, 숫자, 점(.), 언더스코어(_)만 허용</div>
+                  <div>• <strong>개인:</strong> com.개발자이름.앱명 (예: com.john.calculator)</div>
+                </div>
+              </div>
+              
+              {/* 패키지명 미리보기 */}
+              {formData.app_id && (
+                <div className="mt-2 p-2 bg-gray-50 border border-gray-200 rounded-md">
+                  <div className="text-xs text-gray-600">
+                    <span className="font-medium">패키지명:</span> <code className="bg-gray-100 px-1 rounded">{formData.package_name}</code>
+                  </div>
+                  {/* 패키지명 검증 */}
+                  {(() => {
+                    const isValid = /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/.test(formData.app_id);
+                    const hasMinSegments = formData.app_id.split('.').length >= 2;
+                    
+                    if (isValid && hasMinSegments) {
+                      return (
+                        <div className="mt-1 flex items-center text-xs text-green-700">
+                          <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          올바른 패키지명 형식입니다
+                        </div>
+                      );
+                    } else {
+                      return (
+                        <div className="mt-1 flex items-center text-xs text-red-700">
+                          <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                          {!hasMinSegments ? '최소 2개 세그먼트 필요 (예: com.myapp)' : '영문 소문자로 시작하고 올바른 형식을 사용하세요'}
+                        </div>
+                      );
+                    }
+                  })()}
+                </div>
+              )}
             </div>
 
             {/* 버전 */}

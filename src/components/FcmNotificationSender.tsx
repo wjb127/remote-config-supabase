@@ -233,20 +233,34 @@ export default function FcmNotificationSender({ app }: FcmNotificationSenderProp
                 선택한 토픽을 구독한 사용자들에게 알림이 전송됩니다.
               </p>
               
-              {/* 디버깅: 선택된 토픽 정보 */}
+              {/* 선택된 토픽 정보 및 검증 */}
               {form.topic && (
                 <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
                   <div className="font-medium text-blue-800">선택된 토픽 정보:</div>
                   <div className="text-blue-700">토픽 ID: <code className="bg-blue-100 px-1 rounded">{form.topic}</code></div>
                   {(() => {
                     const selectedTopic = topics.find(t => t.topic_id === form.topic);
-                    return selectedTopic ? (
+                    const isValidTopicId = /^[a-zA-Z0-9_-]+$/.test(form.topic);
+                    
+                    return (
                       <>
-                        <div className="text-blue-700">토픽명: {selectedTopic.topic_name}</div>
-                        <div className="text-blue-700">기본 토픽: {selectedTopic.is_default ? '예' : '아니오'}</div>
-                        <div className="text-blue-700">활성 상태: {selectedTopic.is_active ? '활성' : '비활성'}</div>
+                        {selectedTopic && (
+                          <>
+                            <div className="text-blue-700">토픽명: {selectedTopic.topic_name}</div>
+                            <div className="text-blue-700">기본 토픽: {selectedTopic.is_default ? '예' : '아니오'}</div>
+                            <div className="text-blue-700">활성 상태: {selectedTopic.is_active ? '활성' : '비활성'}</div>
+                          </>
+                        )}
+                        {!isValidTopicId && (
+                          <div className="mt-1 p-2 bg-red-50 border border-red-200 rounded">
+                            <div className="font-medium text-red-800">⚠️ 토픽 ID 오류</div>
+                            <div className="text-red-700 text-xs">
+                              Firebase FCM은 한글을 지원하지 않습니다. FCM 토픽 탭에서 토픽 ID를 영문으로 수정하세요.
+                            </div>
+                          </div>
+                        )}
                       </>
-                    ) : null;
+                    );
                   })()}
                 </div>
               )}
@@ -414,6 +428,103 @@ export default function FcmNotificationSender({ app }: FcmNotificationSenderProp
                   >
                     📊 디버깅 정보 출력
                   </button>
+                </div>
+
+                {/* 토픽 구독 문제 진단 */}
+                <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-md">
+                  <div className="font-medium text-orange-800 mb-2">🚨 토픽 알림 수신 실패 진단</div>
+                  <div className="space-y-2 text-xs text-orange-700">
+                    <div className="font-medium">가능한 원인들:</div>
+                    <div className="ml-2 space-y-1">
+                      <div>• <strong>토픽 미구독:</strong> 앱에서 해당 토픽을 구독하지 않음</div>
+                      <div>• <strong>토픽 ID 불일치:</strong> 앱과 서버의 토픽 ID가 다름</div>
+                      <div>• <strong>Firebase 프로젝트 설정:</strong> 잘못된 Firebase 프로젝트 연결</div>
+                      <div>• <strong>FCM 토큰 문제:</strong> 기기의 FCM 토큰이 유효하지 않음</div>
+                    </div>
+                    <div className="mt-2 font-medium">해결 방법:</div>
+                    <div className="ml-2 space-y-1">
+                      <div>1. 앱에서 <code className="bg-orange-100 px-1 rounded">FirebaseMessaging.getInstance().subscribeToTopic("{form.topic}")</code> 호출</div>
+                      <div>2. Firebase Console에서 토픽 이름 확인</div>
+                      <div>3. 앱 재시작 후 토픽 구독 재시도</div>
+                      <div>4. 브로드캐스트가 정상 작동하므로 FCM 설정은 올바름</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 토픽 구독 테스트 도구 */}
+                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <div className="font-medium text-blue-800 mb-2">🧪 토픽 구독 테스트</div>
+                  <div className="space-y-2">
+                    <div className="text-xs text-blue-700">
+                      현재 선택된 토픽: <code className="bg-blue-100 px-1 rounded">{form.topic}</code>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <button
+                        onClick={async () => {
+                          try {
+                            // 테스트용 간단한 토픽 메시지 전송
+                            const testPayload = {
+                              topic: form.topic,
+                              title: '🧪 토픽 구독 테스트',
+                              body: `${form.topic} 토픽 구독이 정상적으로 작동하는지 확인하는 테스트 메시지입니다.`,
+                              data: { test: 'true', timestamp: new Date().toISOString() }
+                            };
+                            
+                            const response = await fetch('/api/fcm/send-to-topic', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify(testPayload),
+                            });
+                            
+                            const result = await response.json();
+                            if (result.success) {
+                              alert('✅ 토픽 테스트 메시지 전송 완료!\n\n앱에서 알림을 받았다면 토픽 구독이 정상입니다.\n받지 못했다면 앱에서 토픽 구독을 확인하세요.');
+                            } else {
+                              alert('❌ 토픽 테스트 실패: ' + (result.error || '알 수 없는 오류'));
+                            }
+                          } catch (error) {
+                            alert('❌ 토픽 테스트 중 오류 발생');
+                          }
+                        }}
+                        className="px-3 py-2 text-sm bg-blue-100 text-blue-800 hover:bg-blue-200 rounded-md border border-blue-300"
+                      >
+                        🧪 토픽 구독 테스트
+                      </button>
+                      
+                      <button
+                        onClick={() => {
+                          const subscribeCode = `
+// Android (Kotlin)
+FirebaseMessaging.getInstance().subscribeToTopic("${form.topic}")
+    .addOnCompleteListener { task ->
+        if (task.isSuccessful) {
+            Log.d("FCM", "토픽 구독 성공: ${form.topic}")
+        } else {
+            Log.e("FCM", "토픽 구독 실패: ${form.topic}")
+        }
+    }
+
+// iOS (Swift)
+Messaging.messaging().subscribe(toTopic: "${form.topic}") { error in
+    if let error = error {
+        print("토픽 구독 실패: \\(error)")
+    } else {
+        print("토픽 구독 성공: ${form.topic}")
+    }
+}`;
+                          
+                          navigator.clipboard.writeText(subscribeCode).then(() => {
+                            alert('📋 토픽 구독 코드가 클립보드에 복사되었습니다!\n\n앱 개발자에게 전달하여 해당 토픽을 구독하도록 요청하세요.');
+                          }).catch(() => {
+                            alert('토픽 구독 코드:\n\n' + subscribeCode);
+                          });
+                        }}
+                        className="px-3 py-2 text-sm bg-green-100 text-green-800 hover:bg-green-200 rounded-md border border-green-300"
+                      >
+                        📋 구독 코드 복사
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

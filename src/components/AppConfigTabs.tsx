@@ -37,10 +37,26 @@ export default function AppConfigTabs({ app, onAppUpdated }: AppConfigTabsProps)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
+    
+    // 앱 ID 변경 시 패키지명도 자동으로 동기화
+    if (name === 'app_id') {
+      setFormData(prev => ({
+        ...prev,
+        app_id: value,
+        package_name: value, // 앱 ID와 패키지명 동기화
+      }));
+    } else if (name === 'package_name') {
+      setFormData(prev => ({
+        ...prev,
+        package_name: value,
+        app_id: value, // 패키지명과 앱 ID 동기화
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const handleSave = async () => {
@@ -125,29 +141,62 @@ export default function AppConfigTabs({ app, onAppUpdated }: AppConfigTabsProps)
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    앱 ID
-                  </label>
-                  <input
-                    type="text"
-                    name="app_id"
-                    value={formData.app_id}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    패키지명
-                  </label>
-                  <input
-                    type="text"
-                    name="package_name"
-                    value={formData.package_name}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
+                {/* 앱 ID / 패키지명 통합 입력 */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center mb-2">
+                    <div className="flex-shrink-0">
+                      <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                    </div>
+                    <div className="ml-2">
+                      <h4 className="text-sm font-medium text-blue-900">앱 식별자 설정</h4>
+                      <p className="text-xs text-blue-700">앱 ID와 패키지명이 자동으로 동기화됩니다</p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        앱 ID
+                      </label>
+                      <input
+                        type="text"
+                        name="app_id"
+                        value={formData.app_id}
+                        onChange={handleInputChange}
+                        placeholder="com.example.myapp"
+                        className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        변경 시 패키지명도 자동 업데이트
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        패키지명
+                      </label>
+                      <input
+                        type="text"
+                        name="package_name"
+                        value={formData.package_name}
+                        onChange={handleInputChange}
+                        placeholder="com.example.myapp"
+                        className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        변경 시 앱 ID도 자동 업데이트
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {formData.app_id === formData.package_name && formData.app_id && (
+                    <div className="mt-2 flex items-center text-xs text-green-700">
+                      <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      앱 ID와 패키지명이 동기화되었습니다
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">

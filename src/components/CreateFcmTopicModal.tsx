@@ -81,6 +81,15 @@ export default function CreateFcmTopicModal({ open, onClose, onCreated, appId }:
     }
   };
 
+  // 토픽 ID 검증 함수
+  const validateTopicId = (topicId: string) => {
+    if (!topicId) return true; // 빈 값은 유효성 검사 하지 않음
+    const pattern = /^[a-zA-Z0-9_-]+$/;
+    return pattern.test(topicId);
+  };
+
+  const isTopicIdValid = validateTopicId(formData.topic_id);
+
   if (!open) return null;
 
   return (
@@ -162,9 +171,21 @@ export default function CreateFcmTopicModal({ open, onClose, onCreated, appId }:
                 required
                 value={formData.topic_id}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 ${
+                  !isTopicIdValid 
+                    ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
+                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                }`}
                 placeholder="예: announcements"
               />
+              {!isTopicIdValid && formData.topic_id && (
+                <div className="mt-1 text-xs text-red-600">
+                  <span className="font-medium">⚠️ 잘못된 토픽 ID:</span> 영문, 숫자, 하이픈(-), 언더스코어(_)만 사용 가능합니다
+                </div>
+              )}
+              <div className="mt-1 text-xs text-gray-500">
+                Firebase FCM 규칙: 영문자, 숫자, 하이픈, 언더스코어만 허용
+              </div>
             </div>
 
             {/* 설명 */}
