@@ -408,7 +408,7 @@ export default function FcmNotificationSender({ app }: FcmNotificationSenderProp
                         const response = await fetch('https://remote-config-node-express.onrender.com/api/health');
                         const data = await response.json();
                         alert(`FCM API 서버 상태: ${data.status || 'OK'}`);
-                      } catch (error) {
+                      } catch {
                         alert('FCM API 서버 연결 실패');
                       }
                     }}
@@ -443,7 +443,7 @@ export default function FcmNotificationSender({ app }: FcmNotificationSenderProp
                     </div>
                     <div className="mt-2 font-medium">해결 방법:</div>
                     <div className="ml-2 space-y-1">
-                      <div>1. 앱에서 <code className="bg-orange-100 px-1 rounded">FirebaseMessaging.getInstance().subscribeToTopic("{form.topic}")</code> 호출</div>
+                      <div>1. 앱에서 <code className="bg-orange-100 px-1 rounded">FirebaseMessaging.getInstance().subscribeToTopic(&quot;{form.topic}&quot;)</code> 호출</div>
                       <div>2. Firebase Console에서 토픽 이름 확인</div>
                       <div>3. 앱 재시작 후 토픽 구독 재시도</div>
                       <div>4. 브로드캐스트가 정상 작동하므로 FCM 설정은 올바름</div>
@@ -482,7 +482,7 @@ export default function FcmNotificationSender({ app }: FcmNotificationSenderProp
                             } else {
                               alert('❌ 토픽 테스트 실패: ' + (result.error || '알 수 없는 오류'));
                             }
-                          } catch (error) {
+                          } catch {
                             alert('❌ 토픽 테스트 중 오류 발생');
                           }
                         }}
