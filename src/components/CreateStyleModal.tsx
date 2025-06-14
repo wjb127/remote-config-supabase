@@ -252,23 +252,88 @@ export default function CreateStyleModal({ open, onClose, onCreated, appId }: Cr
                 스타일 값 *
               </label>
               {formData.style_category === 'color' ? (
-                <div className="flex space-x-2">
-                  <input
-                    type="color"
-                    value={formData.style_value.startsWith('#') ? formData.style_value : '#000000'}
-                    onChange={(e) => setFormData(prev => ({ ...prev, style_value: e.target.value }))}
-                    className="w-12 h-10 border border-gray-300 rounded cursor-pointer"
-                  />
-                  <input
-                    type="text"
-                    id="style_value"
-                    name="style_value"
-                    required
+                <div className="space-y-2">
+                  {/* 색상 드롭다운 */}
+                  <select
                     value={formData.style_value}
-                    onChange={handleChange}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="#007AFF"
-                  />
+                    onChange={(e) => setFormData(prev => ({ ...prev, style_value: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">색상 선택 또는 직접 입력</option>
+                    <optgroup label="🔴 빨간색 계열">
+                      <option value="#FF3B30">🔴 빨강 (#FF3B30)</option>
+                      <option value="#FF2D92">💖 핑크 (#FF2D92)</option>
+                      <option value="#FF6B6B">🌹 연한 빨강 (#FF6B6B)</option>
+                      <option value="#E74C3C">❤️ 진한 빨강 (#E74C3C)</option>
+                    </optgroup>
+                    <optgroup label="🟠 주황색 계열">
+                      <option value="#FF9500">🟠 주황 (#FF9500)</option>
+                      <option value="#FF8C00">🧡 진한 주황 (#FF8C00)</option>
+                      <option value="#FFA500">🍊 오렌지 (#FFA500)</option>
+                    </optgroup>
+                    <optgroup label="🟡 노란색 계열">
+                      <option value="#FFCC00">🟡 노랑 (#FFCC00)</option>
+                      <option value="#F1C40F">⭐ 골드 (#F1C40F)</option>
+                      <option value="#FFD700">🌟 밝은 골드 (#FFD700)</option>
+                    </optgroup>
+                    <optgroup label="🟢 초록색 계열">
+                      <option value="#34C759">🟢 초록 (#34C759)</option>
+                      <option value="#00C851">✅ 성공 초록 (#00C851)</option>
+                      <option value="#2ECC71">🌿 민트 초록 (#2ECC71)</option>
+                      <option value="#27AE60">🍃 진한 초록 (#27AE60)</option>
+                    </optgroup>
+                    <optgroup label="🔵 파란색 계열">
+                      <option value="#007AFF">🔵 파랑 (#007AFF)</option>
+                      <option value="#3498DB">💙 하늘색 (#3498DB)</option>
+                      <option value="#2980B9">🌊 진한 파랑 (#2980B9)</option>
+                      <option value="#00BCD4">🐬 청록색 (#00BCD4)</option>
+                    </optgroup>
+                    <optgroup label="🟣 보라색 계열">
+                      <option value="#AF52DE">🟣 보라 (#AF52DE)</option>
+                      <option value="#9B59B6">💜 진한 보라 (#9B59B6)</option>
+                      <option value="#8E44AD">🔮 자주색 (#8E44AD)</option>
+                    </optgroup>
+                    <optgroup label="⚫ 무채색 계열">
+                      <option value="#000000">⚫ 검정 (#000000)</option>
+                      <option value="#333333">🖤 진한 회색 (#333333)</option>
+                      <option value="#666666">⚫ 회색 (#666666)</option>
+                      <option value="#999999">🩶 연한 회색 (#999999)</option>
+                      <option value="#CCCCCC">🤍 밝은 회색 (#CCCCCC)</option>
+                      <option value="#FFFFFF">⚪ 흰색 (#FFFFFF)</option>
+                    </optgroup>
+                  </select>
+                  
+                  {/* 색상 피커와 직접 입력 */}
+                  <div className="flex space-x-2">
+                    <input
+                      type="color"
+                      value={formData.style_value.startsWith('#') ? formData.style_value : '#000000'}
+                      onChange={(e) => setFormData(prev => ({ ...prev, style_value: e.target.value }))}
+                      className="w-12 h-10 border border-gray-300 rounded cursor-pointer"
+                      title="색상 피커"
+                    />
+                    <input
+                      type="text"
+                      id="style_value"
+                      name="style_value"
+                      required
+                      value={formData.style_value}
+                      onChange={handleChange}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="#007AFF"
+                    />
+                  </div>
+                  
+                  {/* 색상 미리보기 */}
+                  {formData.style_value && formData.style_value.startsWith('#') && (
+                    <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-md">
+                      <div 
+                        className="w-6 h-6 rounded border border-gray-300"
+                        style={{ backgroundColor: formData.style_value }}
+                      />
+                      <span className="text-sm text-gray-600">미리보기: {formData.style_value}</span>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <input
