@@ -90,11 +90,18 @@ export default function CreateMenuModal({ open, onClose, onCreated, appId, menus
   const [selectedCategory, setSelectedCategory] = useState<string>('navigation');
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
   const [isCustomMode, setIsCustomMode] = useState(false);
+  // 다음 순서 자동 계산
+  const getNextOrderIndex = () => {
+    if (menus.length === 0) return 1;
+    const maxOrder = Math.max(...menus.map(menu => menu.order_index || 0));
+    return maxOrder + 1;
+  };
+
   const [formData, setFormData] = useState<CreateMenuRequest>({
     menu_id: '',
     title: '',
     icon: '',
-    order_index: menus.length,
+    order_index: getNextOrderIndex(),
     parent_id: '',
     menu_type: 'item',
     action_type: 'navigate',
@@ -127,7 +134,7 @@ export default function CreateMenuModal({ open, onClose, onCreated, appId, menus
           menu_id: '',
           title: '',
           icon: '',
-          order_index: menus.length,
+          order_index: getNextOrderIndex(),
           parent_id: '',
           menu_type: 'item',
           action_type: 'navigate',
@@ -352,15 +359,48 @@ export default function CreateMenuModal({ open, onClose, onCreated, appId, menus
               <label htmlFor="order_index" className="block text-sm font-medium text-gray-700 mb-1">
                 순서
               </label>
-              <input
-                type="number"
-                id="order_index"
-                name="order_index"
-                min="0"
-                value={formData.order_index}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
+              <div className="relative">
+                <input
+                  type="number"
+                  id="order_index"
+                  name="order_index"
+                  min="1"
+                  value={formData.order_index}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <div className="mt-1 flex items-center justify-between text-xs">
+                  <span className="text-gray-500">
+                    자동으로 다음 순서({formData.order_index})가 설정됩니다
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, order_index: getNextOrderIndex() }))}
+                    className="text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    순서 재설정
+                  </button>
+                </div>
+              </div>
+              {menus.length > 0 && (
+                <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+                  <div className="text-xs text-blue-800 font-medium mb-1">📋 현재 메뉴 순서:</div>
+                  <div className="text-xs text-blue-700 space-y-1">
+                    {menus
+                      .sort((a, b) => (a.order_index || 0) - (b.order_index || 0))
+                      .slice(0, 5)
+                      .map((menu, index) => (
+                        <div key={menu.id} className="flex justify-between">
+                          <span>{menu.order_index}. {menu.title}</span>
+                          <span className="text-blue-600">{menu.menu_type}</span>
+                        </div>
+                      ))}
+                    {menus.length > 5 && (
+                      <div className="text-blue-600">... 외 {menus.length - 5}개</div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* 상위 메뉴 */}
