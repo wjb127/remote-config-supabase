@@ -64,7 +64,7 @@ export default function CreateFcmTopicModal({ open, onClose, onCreated, appId }:
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     
     if (type === 'checkbox') {
@@ -79,6 +79,14 @@ export default function CreateFcmTopicModal({ open, onClose, onCreated, appId }:
         [name]: value,
       }));
     }
+  };
+
+  const updateTopicNameAndId = (topicName: string, topicId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      topic_name: topicName,
+      topic_id: topicId,
+    }));
   };
 
   // 토픽 ID 검증 함수
@@ -142,49 +150,62 @@ export default function CreateFcmTopicModal({ open, onClose, onCreated, appId }:
         {/* 폼 */}
         <form onSubmit={handleSubmit} className="p-6">
           <div className="space-y-4">
-            {/* 토픽 이름 */}
+            {/* 토픽 타입 선택 */}
             <div>
-              <label htmlFor="topic_name" className="block text-sm font-medium text-gray-700 mb-1">
-                토픽 이름 *
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                토픽 타입 *
+              </label>
+              <select
+                value={`${formData.topic_name}|${formData.topic_id}`}
+                onChange={(e) => {
+                  const [topicName, topicId] = e.target.value.split('|');
+                  updateTopicNameAndId(topicName, topicId);
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                required
+              >
+                <option value="|">토픽 선택</option>
+                <option value="공지사항|announcements">📢 공지사항</option>
+                <option value="이벤트|events">🎉 이벤트</option>
+                <option value="업데이트|updates">🔄 업데이트</option>
+                <option value="프로모션|promotions">🎁 프로모션</option>
+                <option value="뉴스|news">📰 뉴스</option>
+                <option value="알림|notifications">🔔 알림</option>
+                <option value="마케팅|marketing">📈 마케팅</option>
+                <option value="시스템|system">⚙️ 시스템</option>
+                <option value="보안|security">🔒 보안</option>
+                <option value="커뮤니티|community">👥 커뮤니티</option>
+              </select>
+            </div>
+
+            {/* 토픽 이름 (자동 설정) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                토픽 이름 (자동 설정)
               </label>
               <input
                 type="text"
-                id="topic_name"
-                name="topic_name"
-                required
                 value={formData.topic_name}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="예: 공지사항"
+                readOnly
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-600"
+                placeholder="자동으로 설정됩니다"
               />
             </div>
 
-            {/* 토픽 ID */}
+            {/* 토픽 ID (자동 설정) */}
             <div>
-              <label htmlFor="topic_id" className="block text-sm font-medium text-gray-700 mb-1">
-                토픽 ID *
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                토픽 ID (자동 설정)
               </label>
               <input
                 type="text"
-                id="topic_id"
-                name="topic_id"
-                required
                 value={formData.topic_id}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 ${
-                  !isTopicIdValid 
-                    ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
-                    : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
-                }`}
-                placeholder="예: announcements"
+                readOnly
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-600"
+                placeholder="자동으로 설정됩니다"
               />
-              {!isTopicIdValid && formData.topic_id && (
-                <div className="mt-1 text-xs text-red-600">
-                  <span className="font-medium">⚠️ 잘못된 토픽 ID:</span> 영문, 숫자, 하이픈(-), 언더스코어(_)만 사용 가능합니다
-                </div>
-              )}
               <div className="mt-1 text-xs text-gray-500">
-                Firebase FCM 규칙: 영문자, 숫자, 하이픈, 언더스코어만 허용
+                Firebase FCM 규칙에 맞게 자동 생성됩니다
               </div>
             </div>
 
