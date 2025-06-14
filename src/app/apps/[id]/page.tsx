@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   ArrowLeft, 
@@ -24,7 +24,7 @@ export default function AppPage({ params }: AppPageProps) {
   const [app, setApp] = useState<App | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchApp = async () => {
+  const fetchApp = useCallback(async () => {
     const { id } = await params;
     try {
       const response = await fetch(`/api/apps/${id}`);
@@ -42,11 +42,11 @@ export default function AppPage({ params }: AppPageProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [params, router]);
 
   useEffect(() => {
     fetchApp();
-  }, [params, router]);
+  }, [fetchApp]);
 
   if (loading) {
     return (

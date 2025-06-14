@@ -20,7 +20,12 @@ export default function FcmNotificationSender({ app }: FcmNotificationSenderProp
   const [topics, setTopics] = useState<AppFcmTopic[]>([]);
   const [loading, setLoading] = useState(false);
   const [topicsLoading, setTopicsLoading] = useState(true);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<{
+    success: boolean;
+    message?: string;
+    error?: string;
+    messageId?: string;
+  } | null>(null);
   const [form, setForm] = useState<NotificationForm>({
     topic: '',
     title: '',
@@ -90,8 +95,9 @@ export default function FcmNotificationSender({ app }: FcmNotificationSenderProp
           image: '',
         }));
       }
-    } catch (error: any) {
-      setResult({ success: false, error: error.message });
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
+      setResult({ success: false, error: errorMessage });
     } finally {
       setLoading(false);
     }
@@ -134,8 +140,9 @@ export default function FcmNotificationSender({ app }: FcmNotificationSenderProp
           image: '',
         }));
       }
-    } catch (error: any) {
-      setResult({ success: false, error: error.message });
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
+      setResult({ success: false, error: errorMessage });
     } finally {
       setLoading(false);
     }

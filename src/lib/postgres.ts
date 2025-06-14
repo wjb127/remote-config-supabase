@@ -1,4 +1,4 @@
-import { Pool, QueryResult } from 'pg';
+import { Pool, QueryResult, PoolClient } from 'pg';
 
 // PostgreSQL 연결 풀 생성
 const pool = new Pool({
@@ -12,7 +12,7 @@ const pool = new Pool({
 });
 
 // 쿼리 실행 함수
-export async function query(text: string, params?: any[]): Promise<QueryResult> {
+export async function query(text: string, params?: unknown[]): Promise<QueryResult> {
   const client = await pool.connect();
   try {
     const result = await client.query(text, params);
@@ -23,7 +23,7 @@ export async function query(text: string, params?: any[]): Promise<QueryResult> 
 }
 
 // 트랜잭션 실행 함수
-export async function transaction(callback: (client: any) => Promise<any>) {
+export async function transaction<T>(callback: (client: PoolClient) => Promise<T>): Promise<T> {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
