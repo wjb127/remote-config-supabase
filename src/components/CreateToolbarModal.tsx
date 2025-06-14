@@ -384,6 +384,8 @@ export default function CreateToolbarModal({ open, onClose, onCreated, appId }: 
                           <option value="메뉴|menu|/menu">📋 메뉴</option>
                           <option value="추가|plus|/add">➕ 추가</option>
                           <option value="장바구니|shopping-cart|/cart">🛒 장바구니</option>
+                          <option value="통계|bar-chart|/statistics">📊 통계</option>
+                          <option value="기록|calendar|/records">📅 기록</option>
                         </select>
                       </div>
                       <div>
