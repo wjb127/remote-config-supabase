@@ -128,6 +128,15 @@ export default function CreateToolbarModal({ open, onClose, onCreated, appId }: 
     }));
   };
 
+  const updateButtonTitleIconAndAction = (index: number, title: string, icon: string, actionValue: string) => {
+    setFormData(prev => ({
+      ...prev,
+      buttons: prev.buttons.map((button, i) => 
+        i === index ? { ...button, title, icon, action_value: actionValue } : button
+      ),
+    }));
+  };
+
   const removeButton = (index: number) => {
     setFormData(prev => ({
       ...prev,
@@ -357,24 +366,24 @@ export default function CreateToolbarModal({ open, onClose, onCreated, appId }: 
                           버튼 타입 *
                         </label>
                         <select
-                          value={`${button.title}|${button.icon}`}
+                          value={`${button.title}|${button.icon}|${button.action_value}`}
                           onChange={(e) => {
-                            const [title, icon] = e.target.value.split('|');
-                            updateButtonTitleAndIcon(index, title, icon);
+                            const [title, icon, actionValue] = e.target.value.split('|');
+                            updateButtonTitleIconAndAction(index, title, icon, actionValue);
                           }}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         >
-                          <option value="|">버튼 선택</option>
-                          <option value="홈|home">🏠 홈</option>
-                          <option value="사용자|user">👤 사용자</option>
-                          <option value="설정|settings">⚙️ 설정</option>
-                          <option value="검색|search">🔍 검색</option>
-                          <option value="좋아요|heart">❤️ 좋아요</option>
-                          <option value="즐겨찾기|star">⭐ 즐겨찾기</option>
-                          <option value="알림|bell">🔔 알림</option>
-                          <option value="메뉴|menu">📋 메뉴</option>
-                          <option value="추가|plus">➕ 추가</option>
-                          <option value="장바구니|shopping-cart">🛒 장바구니</option>
+                          <option value="||">버튼 선택</option>
+                          <option value="홈|home|/home">🏠 홈</option>
+                          <option value="사용자|user|/profile">👤 사용자</option>
+                          <option value="설정|settings|/settings">⚙️ 설정</option>
+                          <option value="검색|search|/search">🔍 검색</option>
+                          <option value="좋아요|heart|/favorites">❤️ 좋아요</option>
+                          <option value="즐겨찾기|star|/bookmarks">⭐ 즐겨찾기</option>
+                          <option value="알림|bell|/notifications">🔔 알림</option>
+                          <option value="메뉴|menu|/menu">📋 메뉴</option>
+                          <option value="추가|plus|/add">➕ 추가</option>
+                          <option value="장바구니|shopping-cart|/cart">🛒 장바구니</option>
                         </select>
                       </div>
                       <div>
@@ -405,14 +414,14 @@ export default function CreateToolbarModal({ open, onClose, onCreated, appId }: 
                       </div>
                       <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1">
-                          액션 값 *
+                          액션 값 (자동 설정)
                         </label>
                         <input
                           type="text"
-                          placeholder="액션 값을 입력하세요"
+                          placeholder="자동으로 설정됩니다"
                           value={button.action_value}
-                          onChange={(e) => updateButton(index, 'action_value', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          readOnly
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-600"
                         />
                       </div>
                     </div>
