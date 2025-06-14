@@ -137,6 +137,14 @@ export default function CreateToolbarModal({ open, onClose, onCreated, appId }: 
     }));
   };
 
+  const updateToolbarColors = (backgroundColor: string, textColor: string) => {
+    setFormData(prev => ({
+      ...prev,
+      background_color: backgroundColor,
+      text_color: textColor,
+    }));
+  };
+
   const removeButton = (index: number) => {
     setFormData(prev => ({
       ...prev,
@@ -266,53 +274,126 @@ export default function CreateToolbarModal({ open, onClose, onCreated, appId }: 
               </div>
             </div>
 
-            {/* 색상 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="background_color" className="block text-sm font-medium text-gray-700 mb-1">
-                  배경 색상
-                </label>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="color"
-                    id="background_color"
-                    name="background_color"
-                    value={formData.background_color}
-                    onChange={handleChange}
-                    className="w-12 h-10 border border-gray-300 rounded cursor-pointer"
-                  />
-                  <input
-                    type="text"
-                    value={formData.background_color}
-                    onChange={handleChange}
-                    name="background_color"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="#FFFFFF"
-                  />
+            {/* 색상 조합 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                색상 조합 *
+              </label>
+              
+              {/* 색상 조합 드롭다운 */}
+              <select
+                value={`${formData.background_color}|${formData.text_color}`}
+                onChange={(e) => {
+                  const [backgroundColor, textColor] = e.target.value.split('|');
+                  updateToolbarColors(backgroundColor, textColor);
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
+              >
+                <option value="|">색상 조합 선택</option>
+                <optgroup label="🌟 클래식 조합">
+                  <option value="#FFFFFF|#000000">⚪ 화이트 + ⚫ 블랙</option>
+                  <option value="#000000|#FFFFFF">⚫ 블랙 + ⚪ 화이트</option>
+                  <option value="#F8F9FA|#212529">🤍 라이트 그레이 + 🖤 다크 그레이</option>
+                  <option value="#343A40|#FFFFFF">🖤 다크 그레이 + ⚪ 화이트</option>
+                </optgroup>
+                <optgroup label="🔵 블루 계열">
+                  <option value="#007AFF|#FFFFFF">🔵 iOS 블루 + ⚪ 화이트</option>
+                  <option value="#0D6EFD|#FFFFFF">💙 부트스트랩 블루 + ⚪ 화이트</option>
+                  <option value="#E3F2FD|#1565C0">🌌 라이트 블루 + 🌊 다크 블루</option>
+                  <option value="#1976D2|#FFFFFF">🌊 머티리얼 블루 + ⚪ 화이트</option>
+                </optgroup>
+                <optgroup label="🟢 그린 계열">
+                  <option value="#28A745|#FFFFFF">🟢 성공 그린 + ⚪ 화이트</option>
+                  <option value="#34C759|#FFFFFF">✅ iOS 그린 + ⚪ 화이트</option>
+                  <option value="#E8F5E8|#2E7D32">🌿 라이트 그린 + 🍃 다크 그린</option>
+                  <option value="#4CAF50|#FFFFFF">🌱 머티리얼 그린 + ⚪ 화이트</option>
+                </optgroup>
+                <optgroup label="🔴 레드 계열">
+                  <option value="#DC3545|#FFFFFF">🔴 경고 레드 + ⚪ 화이트</option>
+                  <option value="#FF3B30|#FFFFFF">❤️ iOS 레드 + ⚪ 화이트</option>
+                  <option value="#FFEBEE|#C62828">🌹 라이트 레드 + ❤️ 다크 레드</option>
+                  <option value="#F44336|#FFFFFF">🔥 머티리얼 레드 + ⚪ 화이트</option>
+                </optgroup>
+                <optgroup label="🟠 오렌지 계열">
+                  <option value="#FF9500|#FFFFFF">🟠 iOS 오렌지 + ⚪ 화이트</option>
+                  <option value="#FD7E14|#FFFFFF">🧡 부트스트랩 오렌지 + ⚪ 화이트</option>
+                  <option value="#FFF3E0|#E65100">🍊 라이트 오렌지 + 🔥 다크 오렌지</option>
+                </optgroup>
+                <optgroup label="🟣 퍼플 계열">
+                  <option value="#6F42C1|#FFFFFF">🟣 부트스트랩 퍼플 + ⚪ 화이트</option>
+                  <option value="#AF52DE|#FFFFFF">💜 iOS 퍼플 + ⚪ 화이트</option>
+                  <option value="#F3E5F5|#7B1FA2">🔮 라이트 퍼플 + 💜 다크 퍼플</option>
+                </optgroup>
+                <optgroup label="🌈 그라데이션 스타일">
+                  <option value="#667EEA|#FFFFFF">🌌 인디고 + ⚪ 화이트</option>
+                  <option value="#764BA2|#FFFFFF">🎨 바이올렛 + ⚪ 화이트</option>
+                  <option value="#FF6B6B|#FFFFFF">🌸 코랄 + ⚪ 화이트</option>
+                  <option value="#4ECDC4|#FFFFFF">🐬 터쿼이즈 + ⚪ 화이트</option>
+                </optgroup>
+              </select>
+
+              {/* 개별 색상 조정 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="background_color" className="block text-xs font-medium text-gray-700 mb-1">
+                    배경 색상 (자동 설정)
+                  </label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="color"
+                      id="background_color"
+                      name="background_color"
+                      value={formData.background_color}
+                      onChange={handleChange}
+                      className="w-12 h-10 border border-gray-300 rounded cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={formData.background_color}
+                      onChange={handleChange}
+                      name="background_color"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="#FFFFFF"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="text_color" className="block text-xs font-medium text-gray-700 mb-1">
+                    텍스트 색상 (자동 설정)
+                  </label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="color"
+                      id="text_color"
+                      name="text_color"
+                      value={formData.text_color}
+                      onChange={handleChange}
+                      className="w-12 h-10 border border-gray-300 rounded cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={formData.text_color}
+                      onChange={handleChange}
+                      name="text_color"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="#000000"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <label htmlFor="text_color" className="block text-sm font-medium text-gray-700 mb-1">
-                  텍스트 색상
-                </label>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="color"
-                    id="text_color"
-                    name="text_color"
-                    value={formData.text_color}
-                    onChange={handleChange}
-                    className="w-12 h-10 border border-gray-300 rounded cursor-pointer"
-                  />
-                  <input
-                    type="text"
-                    value={formData.text_color}
-                    onChange={handleChange}
-                    name="text_color"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="#000000"
-                  />
+              {/* 색상 조합 미리보기 */}
+              <div className="mt-3 p-3 rounded-md border border-gray-200">
+                <div className="text-xs font-medium text-gray-700 mb-2">미리보기:</div>
+                <div 
+                  className="px-4 py-2 rounded-md text-center font-medium"
+                  style={{ 
+                    backgroundColor: formData.background_color, 
+                    color: formData.text_color 
+                  }}
+                >
+                  툴바 미리보기 텍스트
                 </div>
               </div>
             </div>
