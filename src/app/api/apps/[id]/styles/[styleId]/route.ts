@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { query } from '@/lib/postgres';
 import { ApiResponse, AppStyle } from '@/types/database';
 
 // GET /api/apps/[id]/styles/[styleId] - 특정 스타일 조회
@@ -9,25 +9,24 @@ export async function GET(
 ) {
   const { id, styleId } = await params;
   try {
-    const { data, error } = await supabaseAdmin
-      .from('app_style')
-      .select('*')
-      .eq('app_id', id)
-      .eq('id', styleId)
-      .single();
+    const result = await query(
+      'SELECT * FROM app_style WHERE app_id = $1 AND id = $2',
+      [id, styleId]
+    );
 
-    if (error) {
+    if (result.rows.length === 0) {
       return NextResponse.json<ApiResponse<AppStyle>>({
         success: false,
-        error: error.message,
+        error: '스타일을 찾을 수 없습니다.',
       }, { status: 404 });
     }
 
     return NextResponse.json<ApiResponse<AppStyle>>({
       success: true,
-      data,
+      data: result.rows[0],
     });
-  } catch {
+  } catch (error) {
+    console.error('Database error:', error);
     return NextResponse.json<ApiResponse<AppStyle>>({
       success: false,
       error: '서버 오류가 발생했습니다.',
@@ -44,30 +43,39 @@ export async function PUT(
   try {
     const body = await request.json();
     
-    const { data, error } = await supabaseAdmin
-      .from('app_style')
-      .update(body)
-      .eq('app_id', id)
-      .eq('id', styleId)
-      .select()
-      .single();
+    const result = await query(
+      `UPDATE app_style 
+       SET style_key = $1, style_value = $2, style_category = $3, 
+           description = $4, updated_at = NOW()
+       WHERE app_id = $5 AND id = $6
+       RETURNING *`,
+      [
+        body.style_key,
+        body.style_value,
+        body.style_category,
+        body.description,
+        id,
+        styleId
+      ]
+    );
 
-    if (error) {
+    if (result.rows.length === 0) {
       return NextResponse.json<ApiResponse<AppStyle>>({
         success: false,
-        error: error.message,
-      }, { status: 400 });
+        error: '스타일을 찾을 수 없습니다.',
+      }, { status: 404 });
     }
 
     return NextResponse.json<ApiResponse<AppStyle>>({
       success: true,
-      data,
+      data: result.rows[0],
       message: '스타일이 성공적으로 수정되었습니다.',
     });
-  } catch {
+  } catch (error) {
+    console.error('Database error:', error);
     return NextResponse.json<ApiResponse<AppStyle>>({
       success: false,
-      error: '잘못된 요청 데이터입니다.',
+      error: '스타일 수정 중 오류가 발생했습니다.',
     }, { status: 400 });
   }
 }
@@ -79,17 +87,16 @@ export async function DELETE(
 ) {
   const { id, styleId } = await params;
   try {
-    const { error } = await supabaseAdmin
-      .from('app_style')
-      .delete()
-      .eq('app_id', id)
-      .eq('id', styleId);
+    const result = await query(
+      'DELETE FROM app_style WHERE app_id = $1 AND id = $2 RETURNING *',
+      [id, styleId]
+    );
 
-    if (error) {
+    if (result.rows.length === 0) {
       return NextResponse.json<ApiResponse<null>>({
         success: false,
-        error: error.message,
-      }, { status: 400 });
+        error: '스타일을 찾을 수 없습니다.',
+      }, { status: 404 });
     }
 
     return NextResponse.json<ApiResponse<null>>({
@@ -97,10 +104,11 @@ export async function DELETE(
       data: null,
       message: '스타일이 성공적으로 삭제되었습니다.',
     });
-  } catch {
+  } catch (error) {
+    console.error('Database error:', error);
     return NextResponse.json<ApiResponse<null>>({
       success: false,
-      error: '서버 오류가 발생했습니다.',
+      error: '스타일 삭제 중 오류가 발생했습니다.',
     }, { status: 500 });
   }
 } 

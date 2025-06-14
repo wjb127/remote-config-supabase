@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { query } from '@/lib/postgres';
 import { ApiResponse } from '@/types/database';
 
 interface RemoteConfig {
@@ -61,47 +61,43 @@ export async function GET(
   const { appId } = await params;
   try {
     // 앱 정보 조회
-    const { data: app, error: appError } = await supabaseAdmin
-      .from('app')
-      .select('*')
-      .eq('app_id', appId)
-      .eq('status', 'active')
-      .single();
+    const appResult = await query(
+      `SELECT * FROM app WHERE app_id = $1 AND status = 'active'`,
+      [appId]
+    );
 
-    if (appError || !app) {
+    if (appResult.rows.length === 0) {
       return NextResponse.json<ApiResponse<null>>({
         success: false,
         error: '앱을 찾을 수 없습니다.',
       }, { status: 404 });
     }
 
+    const app = appResult.rows[0];
+
     // 메뉴, 툴바, FCM 토픽, 스타일 정보를 병렬로 조회
-    const [
-      { data: menus },
-      { data: toolbars },
-      { data: fcmTopics },
-      { data: styles }
-    ] = await Promise.all([
-      supabaseAdmin
-        .from('menu')
-        .select('*')
-        .eq('app_id', app.id)
-        .eq('is_visible', true)
-        .order('order_index', { ascending: true }),
-      supabaseAdmin
-        .from('app_toolbar')
-        .select('*')
-        .eq('app_id', app.id)
-        .eq('is_visible', true),
-      supabaseAdmin
-        .from('app_fcm_topic')
-        .select('*')
-        .eq('app_id', app.id)
-        .eq('is_active', true),
-      supabaseAdmin
-        .from('app_style')
-        .select('*')
-        .eq('app_id', app.id)
+    const [menusResult, toolbarsResult, fcmTopicsResult, stylesResult] = await Promise.all([
+      query(
+        `SELECT * FROM menu 
+         WHERE app_id = $1 AND is_visible = true 
+         ORDER BY order_index ASC`,
+        [app.id]
+      ),
+      query(
+        `SELECT * FROM app_toolbar 
+         WHERE app_id = $1 AND is_visible = true`,
+        [app.id]
+      ),
+      query(
+        `SELECT * FROM app_fcm_topic 
+         WHERE app_id = $1 AND is_active = true`,
+        [app.id]
+      ),
+      query(
+        `SELECT * FROM app_style 
+         WHERE app_id = $1`,
+        [app.id]
+      )
     ]);
 
     const config: RemoteConfig = {
@@ -114,17 +110,18 @@ export async function GET(
         description: app.description,
         status: app.status,
       },
-      menus: menus || [],
-      toolbars: toolbars || [],
-      fcm_topics: fcmTopics || [],
-      styles: styles || [],
+      menus: menusResult.rows || [],
+      toolbars: toolbarsResult.rows || [],
+      fcm_topics: fcmTopicsResult.rows || [],
+      styles: stylesResult.rows || [],
     };
 
     return NextResponse.json<ApiResponse<RemoteConfig>>({
       success: true,
       data: config,
     });
-  } catch {
+  } catch (error) {
+    console.error('Database error:', error);
     return NextResponse.json<ApiResponse<null>>({
       success: false,
       error: '서버 오류가 발생했습니다.',

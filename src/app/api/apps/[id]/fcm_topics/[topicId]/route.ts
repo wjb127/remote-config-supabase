@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { query } from '@/lib/postgres';
 import { ApiResponse, AppFcmTopic } from '@/types/database';
 
 // GET /api/apps/[id]/fcm_topics/[topicId] - 특정 FCM 토픽 조회
@@ -9,25 +9,24 @@ export async function GET(
 ) {
   const { id, topicId } = await params;
   try {
-    const { data, error } = await supabaseAdmin
-      .from('app_fcm_topic')
-      .select('*')
-      .eq('app_id', id)
-      .eq('id', topicId)
-      .single();
+    const result = await query(
+      'SELECT * FROM app_fcm_topic WHERE app_id = $1 AND id = $2',
+      [id, topicId]
+    );
 
-    if (error) {
+    if (result.rows.length === 0) {
       return NextResponse.json<ApiResponse<AppFcmTopic>>({
         success: false,
-        error: error.message,
+        error: 'FCM 토픽을 찾을 수 없습니다.',
       }, { status: 404 });
     }
 
     return NextResponse.json<ApiResponse<AppFcmTopic>>({
       success: true,
-      data,
+      data: result.rows[0],
     });
-  } catch {
+  } catch (error) {
+    console.error('Database error:', error);
     return NextResponse.json<ApiResponse<AppFcmTopic>>({
       success: false,
       error: '서버 오류가 발생했습니다.',
@@ -44,30 +43,40 @@ export async function PUT(
   try {
     const body = await request.json();
     
-    const { data, error } = await supabaseAdmin
-      .from('app_fcm_topic')
-      .update(body)
-      .eq('app_id', id)
-      .eq('id', topicId)
-      .select()
-      .single();
+    const result = await query(
+      `UPDATE app_fcm_topic 
+       SET topic_name = $1, topic_id = $2, description = $3, 
+           is_default = $4, is_active = $5, updated_at = NOW()
+       WHERE app_id = $6 AND id = $7
+       RETURNING *`,
+      [
+        body.topic_name,
+        body.topic_id,
+        body.description,
+        body.is_default,
+        body.is_active,
+        id,
+        topicId
+      ]
+    );
 
-    if (error) {
+    if (result.rows.length === 0) {
       return NextResponse.json<ApiResponse<AppFcmTopic>>({
         success: false,
-        error: error.message,
-      }, { status: 400 });
+        error: 'FCM 토픽을 찾을 수 없습니다.',
+      }, { status: 404 });
     }
 
     return NextResponse.json<ApiResponse<AppFcmTopic>>({
       success: true,
-      data,
+      data: result.rows[0],
       message: 'FCM 토픽이 성공적으로 수정되었습니다.',
     });
-  } catch {
+  } catch (error) {
+    console.error('Database error:', error);
     return NextResponse.json<ApiResponse<AppFcmTopic>>({
       success: false,
-      error: '잘못된 요청 데이터입니다.',
+      error: 'FCM 토픽 수정 중 오류가 발생했습니다.',
     }, { status: 400 });
   }
 }
@@ -79,17 +88,16 @@ export async function DELETE(
 ) {
   const { id, topicId } = await params;
   try {
-    const { error } = await supabaseAdmin
-      .from('app_fcm_topic')
-      .delete()
-      .eq('app_id', id)
-      .eq('id', topicId);
+    const result = await query(
+      'DELETE FROM app_fcm_topic WHERE app_id = $1 AND id = $2 RETURNING *',
+      [id, topicId]
+    );
 
-    if (error) {
+    if (result.rows.length === 0) {
       return NextResponse.json<ApiResponse<null>>({
         success: false,
-        error: error.message,
-      }, { status: 400 });
+        error: 'FCM 토픽을 찾을 수 없습니다.',
+      }, { status: 404 });
     }
 
     return NextResponse.json<ApiResponse<null>>({
@@ -97,10 +105,11 @@ export async function DELETE(
       data: null,
       message: 'FCM 토픽이 성공적으로 삭제되었습니다.',
     });
-  } catch {
+  } catch (error) {
+    console.error('Database error:', error);
     return NextResponse.json<ApiResponse<null>>({
       success: false,
-      error: '서버 오류가 발생했습니다.',
+      error: 'FCM 토픽 삭제 중 오류가 발생했습니다.',
     }, { status: 500 });
   }
 } 

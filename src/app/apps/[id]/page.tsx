@@ -24,27 +24,27 @@ export default function AppPage({ params }: AppPageProps) {
   const [app, setApp] = useState<App | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchApp = async () => {
-      const { id } = await params;
-      try {
-        const response = await fetch(`/api/apps/${id}`);
-        const result: ApiResponse<App> = await response.json();
-        
-        if (result.success && result.data) {
-          setApp(result.data);
-        } else {
-          alert('앱을 찾을 수 없습니다.');
-          router.push('/');
-        }
-      } catch {
-        alert('앱 정보를 불러오는 중 오류가 발생했습니다.');
+  const fetchApp = async () => {
+    const { id } = await params;
+    try {
+      const response = await fetch(`/api/apps/${id}`);
+      const result: ApiResponse<App> = await response.json();
+      
+      if (result.success && result.data) {
+        setApp(result.data);
+      } else {
+        alert('앱을 찾을 수 없습니다.');
         router.push('/');
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch {
+      alert('앱 정보를 불러오는 중 오류가 발생했습니다.');
+      router.push('/');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchApp();
   }, [params, router]);
 
@@ -218,7 +218,7 @@ export default function AppPage({ params }: AppPageProps) {
         </div>
 
         {/* Configuration Tabs */}
-        <AppConfigTabs app={app} />
+        <AppConfigTabs app={app} onAppUpdated={fetchApp} />
       </div>
     </div>
   );
