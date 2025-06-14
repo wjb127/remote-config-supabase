@@ -67,22 +67,30 @@ export default function FcmNotificationSender({ app }: FcmNotificationSenderProp
     setLoading(true);
     setResult(null);
 
+    const payload = {
+      topic: form.topic,
+      title: form.title,
+      body: form.body,
+      data: form.data,
+      image: form.image,
+    };
+
+    console.log('🚀 토픽 알림 전송 시도:', payload);
+
     try {
       const response = await fetch('/api/fcm/send-to-topic', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          topic: form.topic,
-          title: form.title,
-          body: form.body,
-          data: form.data,
-          image: form.image,
-        }),
+        body: JSON.stringify(payload),
       });
 
+      console.log('📡 API 응답 상태:', response.status, response.statusText);
+      
       const data = await response.json();
+      console.log('📨 API 응답 데이터:', data);
+      
       setResult(data);
       
       if (data.success) {
@@ -97,6 +105,7 @@ export default function FcmNotificationSender({ app }: FcmNotificationSenderProp
       }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
+      console.error('❌ 토픽 알림 전송 오류:', error);
       setResult({ success: false, error: errorMessage });
     } finally {
       setLoading(false);
@@ -113,21 +122,29 @@ export default function FcmNotificationSender({ app }: FcmNotificationSenderProp
     setLoading(true);
     setResult(null);
 
+    const payload = {
+      title: form.title,
+      body: form.body,
+      data: form.data,
+      image: form.image,
+    };
+
+    console.log('🚀 브로드캐스트 전송 시도:', payload);
+
     try {
       const response = await fetch(`/api/fcm/broadcast/${app.app_id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          title: form.title,
-          body: form.body,
-          data: form.data,
-          image: form.image,
-        }),
+        body: JSON.stringify(payload),
       });
 
+      console.log('📡 브로드캐스트 응답 상태:', response.status, response.statusText);
+      
       const data = await response.json();
+      console.log('📨 브로드캐스트 응답 데이터:', data);
+      
       setResult(data);
       
       if (data.success) {
@@ -142,6 +159,7 @@ export default function FcmNotificationSender({ app }: FcmNotificationSenderProp
       }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
+      console.error('❌ 브로드캐스트 전송 오류:', error);
       setResult({ success: false, error: errorMessage });
     } finally {
       setLoading(false);
@@ -214,6 +232,24 @@ export default function FcmNotificationSender({ app }: FcmNotificationSenderProp
               <p className="mt-1 text-xs text-gray-500">
                 선택한 토픽을 구독한 사용자들에게 알림이 전송됩니다.
               </p>
+              
+              {/* 디버깅: 선택된 토픽 정보 */}
+              {form.topic && (
+                <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
+                  <div className="font-medium text-blue-800">선택된 토픽 정보:</div>
+                  <div className="text-blue-700">토픽 ID: <code className="bg-blue-100 px-1 rounded">{form.topic}</code></div>
+                  {(() => {
+                    const selectedTopic = topics.find(t => t.topic_id === form.topic);
+                    return selectedTopic ? (
+                      <>
+                        <div className="text-blue-700">토픽명: {selectedTopic.topic_name}</div>
+                        <div className="text-blue-700">기본 토픽: {selectedTopic.is_default ? '예' : '아니오'}</div>
+                        <div className="text-blue-700">활성 상태: {selectedTopic.is_active ? '활성' : '비활성'}</div>
+                      </>
+                    ) : null;
+                  })()}
+                </div>
+              )}
             </div>
 
             {/* 알림 제목 */}
@@ -334,6 +370,51 @@ export default function FcmNotificationSender({ app }: FcmNotificationSenderProp
                 >
                   📢 중요 공지사항
                 </button>
+              </div>
+            </div>
+
+            {/* 디버깅 도구 */}
+            <div className="border-t border-gray-200 pt-6">
+              <h4 className="text-sm font-medium text-gray-900 mb-3">🔧 디버깅 도구</h4>
+              <div className="space-y-2">
+                <div className="p-3 bg-gray-50 rounded-md text-xs">
+                  <div className="font-medium text-gray-800 mb-2">문제 해결 가이드:</div>
+                  <div className="space-y-1 text-gray-600">
+                    <div>1. <strong>토픽 구독 확인:</strong> 모바일 앱에서 해당 토픽을 구독했는지 확인</div>
+                    <div>2. <strong>토픽 ID 검증:</strong> 토픽 ID가 Firebase Console과 일치하는지 확인</div>
+                    <div>3. <strong>브라우저 콘솔:</strong> F12 → Console에서 자세한 로그 확인</div>
+                    <div>4. <strong>Node.js 서버:</strong> FCM API 서버가 정상 동작하는지 확인</div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <button
+                    onClick={async () => {
+                      try {
+                        const response = await fetch('https://remote-config-node-express.onrender.com/api/health');
+                        const data = await response.json();
+                        alert(`FCM API 서버 상태: ${data.status || 'OK'}`);
+                      } catch (error) {
+                        alert('FCM API 서버 연결 실패');
+                      }
+                    }}
+                    className="px-3 py-2 text-sm bg-yellow-100 text-yellow-800 hover:bg-yellow-200 rounded-md border border-yellow-300"
+                  >
+                    🩺 서버 상태 확인
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      console.log('📊 현재 FCM 토픽 목록:', topics);
+                      console.log('📋 선택된 폼 데이터:', form);
+                      console.log('📱 앱 정보:', app);
+                      alert('콘솔(F12)에서 디버깅 정보를 확인하세요!');
+                    }}
+                    className="px-3 py-2 text-sm bg-purple-100 text-purple-800 hover:bg-purple-200 rounded-md border border-purple-300"
+                  >
+                    📊 디버깅 정보 출력
+                  </button>
+                </div>
               </div>
             </div>
 
