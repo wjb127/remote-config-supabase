@@ -353,13 +353,23 @@ export default function CreateToolbarModal({ open, onClose, onCreated, appId }: 
                         />
                       </div>
                       <div>
-                        <input
-                          type="text"
-                          placeholder="아이콘"
+                        <select
                           value={button.icon}
                           onChange={(e) => updateButton(index, 'icon', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        />
+                        >
+                          <option value="">아이콘 선택</option>
+                          <option value="home">🏠 home (홈)</option>
+                          <option value="user">👤 user (사용자)</option>
+                          <option value="settings">⚙️ settings (설정)</option>
+                          <option value="search">🔍 search (검색)</option>
+                          <option value="heart">❤️ heart (좋아요)</option>
+                          <option value="star">⭐ star (즐겨찾기)</option>
+                          <option value="bell">🔔 bell (알림)</option>
+                          <option value="menu">📋 menu (메뉴)</option>
+                          <option value="plus">➕ plus (추가)</option>
+                          <option value="shopping-cart">🛒 shopping-cart (장바구니)</option>
+                        </select>
                       </div>
                       <div>
                         <select
