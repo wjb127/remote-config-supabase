@@ -389,7 +389,7 @@ export default function CreateMenuModal({ open, onClose, onCreated, appId, menus
                     {menus
                       .sort((a, b) => (a.order_index || 0) - (b.order_index || 0))
                       .slice(0, 5)
-                      .map((menu, index) => (
+                      .map((menu) => (
                         <div key={menu.id} className="flex justify-between">
                           <span>{menu.order_index}. {menu.title}</span>
                           <span className="text-blue-600">{menu.menu_type}</span>

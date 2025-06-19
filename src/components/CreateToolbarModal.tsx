@@ -119,14 +119,14 @@ export default function CreateToolbarModal({ open, onClose, onCreated, appId }: 
     }));
   };
 
-  const updateButtonTitleAndIcon = (index: number, title: string, icon: string) => {
-    setFormData(prev => ({
-      ...prev,
-      buttons: prev.buttons.map((button, i) => 
-        i === index ? { ...button, title, icon } : button
-      ),
-    }));
-  };
+  // const updateButtonTitleAndIcon = (index: number, title: string, icon: string) => {
+  //   setFormData(prev => ({
+  //     ...prev,
+  //     buttons: prev.buttons.map((button, i) => 
+  //       i === index ? { ...button, title, icon } : button
+  //     ),
+  //   }));
+  // };
 
   const updateButtonTitleIconAndAction = (index: number, title: string, icon: string, actionValue: string) => {
     setFormData(prev => ({

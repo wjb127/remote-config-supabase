@@ -90,13 +90,13 @@ export default function CreateFcmTopicModal({ open, onClose, onCreated, appId }:
   };
 
   // 토픽 ID 검증 함수
-  const validateTopicId = (topicId: string) => {
-    if (!topicId) return true; // 빈 값은 유효성 검사 하지 않음
-    const pattern = /^[a-zA-Z0-9_-]+$/;
-    return pattern.test(topicId);
-  };
+  // const validateTopicId = (topicId: string) => {
+  //   if (!topicId) return true; // 빈 값은 유효성 검사 하지 않음
+  //   const pattern = /^[a-zA-Z0-9_-]+$/;
+  //   return pattern.test(topicId);
+  // };
 
-  const isTopicIdValid = validateTopicId(formData.topic_id);
+  // const isTopicIdValid = validateTopicId(formData.topic_id);
 
   if (!open) return null;
 

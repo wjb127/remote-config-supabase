@@ -9,11 +9,54 @@ interface ApiDocumentationProps {
 }
 
 interface ConfigData {
-  app: any;
-  menus: any[];
-  toolbars: any[];
-  fcm_topics: any[];
-  styles: any[];
+  app: {
+    id: string;
+    app_name: string;
+    app_id: string;
+    package_name: string;
+    version: string;
+    description?: string;
+    status: string;
+  };
+  menus: Array<{
+    id: string;
+    menu_id: string;
+    title: string;
+    icon?: string;
+    order_index: number;
+    parent_id?: string;
+    menu_type: string;
+    action_type?: string;
+    action_value?: string;
+    is_visible: boolean;
+    is_enabled: boolean;
+  }>;
+  toolbars: Array<{
+    id: string;
+    toolbar_id: string;
+    title: string;
+    position: string;
+    background_color: string;
+    text_color: string;
+    height: number;
+    is_visible: boolean;
+    buttons: Record<string, unknown>[];
+  }>;
+  fcm_topics: Array<{
+    id: string;
+    topic_name: string;
+    topic_id: string;
+    description?: string;
+    is_default: boolean;
+    is_active: boolean;
+  }>;
+  styles: Array<{
+    id: string;
+    style_key: string;
+    style_value: string;
+    style_category: string;
+    description?: string;
+  }>;
 }
 
 export default function ApiDocumentation({ app }: ApiDocumentationProps) {
@@ -28,7 +71,7 @@ export default function ApiDocumentation({ app }: ApiDocumentationProps) {
 
   useEffect(() => {
     fetchConfigData();
-  }, [app.app_id]);
+  }, [app.app_id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchConfigData = async () => {
     try {
