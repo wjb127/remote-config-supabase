@@ -7,7 +7,8 @@ import {
   Bell, 
   Palette,
   Settings,
-  Send
+  Send,
+  FileText
 } from 'lucide-react';
 import { App } from '@/types/database';
 import MenuManagement from '@/components/MenuManagement';
@@ -15,13 +16,14 @@ import ToolbarManagement from '@/components/ToolbarManagement';
 import FcmTopicManagement from '@/components/FcmTopicManagement';
 import FcmNotificationSender from '@/components/FcmNotificationSender';
 import StyleManagement from '@/components/StyleManagement';
+import ApiDocumentation from '@/components/ApiDocumentation';
 
 interface AppConfigTabsProps {
   app: App;
   onAppUpdated?: () => void;
 }
 
-type TabType = 'basic' | 'menu' | 'toolbar' | 'fcm' | 'notification' | 'style';
+type TabType = 'basic' | 'menu' | 'toolbar' | 'fcm' | 'notification' | 'style' | 'api';
 
 export default function AppConfigTabs({ app, onAppUpdated }: AppConfigTabsProps) {
   const [activeTab, setActiveTab] = useState<TabType>('basic');
@@ -116,6 +118,11 @@ export default function AppConfigTabs({ app, onAppUpdated }: AppConfigTabsProps)
       id: 'style' as TabType,
       name: '스타일 설정',
       icon: Palette,
+    },
+    {
+      id: 'api' as TabType,
+      name: 'API 문서',
+      icon: FileText,
     },
   ];
 
@@ -261,6 +268,8 @@ export default function AppConfigTabs({ app, onAppUpdated }: AppConfigTabsProps)
         return <FcmNotificationSender app={app} />;
       case 'style':
         return <StyleManagement app={app} />;
+      case 'api':
+        return <ApiDocumentation app={app} />;
       default:
         return null;
     }
